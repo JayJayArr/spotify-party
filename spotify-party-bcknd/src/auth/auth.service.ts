@@ -1,17 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { readFileSync } from 'node:fs';
-import { JwtService } from '@nestjs/jwt';
 import {
-  uniqueNamesGenerator,
   adjectives,
-  colors,
   animals,
+  colors,
+  uniqueNamesGenerator,
 } from 'unique-names-generator';
+
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { readFileSync } from 'node:fs';
 
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
-  private privateKey = readFileSync('../keys/jwtRSA256-private.pem');
+  private privateKey = readFileSync('./src/keys/jwtRSA256-private.pem');
 
   async createJWT() {
     const payload = {

@@ -1,0 +1,4 @@
+- merge both repos into one
+- update backend to serve the FrontEnd via Serve Static
+- change frontend to use a service
+- change frontend to use the angular built in HttpClient
