@@ -33,6 +33,10 @@ export class AppService {
       })
       .then((data) => {
         global.token = data.access_token;
+        const currenttime = new Date();
+        global.token_expires = currenttime.setTime(
+          currenttime.getTime() + data.expires_in * 1000,
+        );
         global.refresh_token = data.refresh_token;
         return data;
       });

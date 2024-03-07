@@ -1,8 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
 @import '@angular/material/prebuilt-themes/pink-bluegrey.css';
-body {background-color: #303030;}
+@import '@angular/material';
 
-.spacer {
+body {background-color: #303030;}
+.spinner {
+    padding: 0px 0px 0px 0px;
+}
+
+  .spacer {
     flex: 500 0 10px;
   }
 
@@ -11,6 +16,6 @@ body {background-color: #303030;}
     max-width: 500px;
     width: 100%;
   }
-.minispacer {
+  .minispacer {
     flex: 1 0 5px;
 }

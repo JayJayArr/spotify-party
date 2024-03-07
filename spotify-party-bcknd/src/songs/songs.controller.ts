@@ -1,5 +1,6 @@
-import { SongsService } from './songs.service';
 import { Controller, Get } from '@nestjs/common';
+
+import { SongsService } from './songs.service';
 
 @Controller('songs')
 export class SongsController {
