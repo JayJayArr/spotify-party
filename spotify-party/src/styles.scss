@@ -1,0 +1,16 @@
+/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/pink-bluegrey.css';
+body {background-color: #303030;}
+
+.spacer {
+    flex: 500 0 10px;
+  }
+
+  .form {
+    min-width: 150px;
+    max-width: 500px;
+    width: 100%;
+  }
+.minispacer {
+    flex: 1 0 5px;
+}

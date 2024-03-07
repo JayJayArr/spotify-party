@@ -1,0 +1,14 @@
+{
+    "/spotify": {
+        "target": {
+            "host": "accounts.spotify.com"
+    },
+    "secure": false
+    },
+    "/backend": {
+        "target": {
+            "host": "localhost:3000"
+        },
+    "secure": false
+    }
+}

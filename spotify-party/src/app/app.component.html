@@ -1,0 +1,23 @@
+<body class="mat-app-background">
+
+
+<p>
+  <mat-toolbar color="primary">
+    <span style='font-size:80%;'>Spotify-Party</span>
+    <span class="spacer"></span>
+
+    <span style='font-size:60%;'>{{this.globalService.username}}</span>
+
+    <span class="spacer"></span>
+    <button type = "button" mat-raised-button [routerLink]="'login'"> Login </button>
+  </mat-toolbar>
+</p>
+
+<nav mat-tab-nav-bar >
+    <a mat-tab-link [routerLink]="''" (click)="activeLink = this.links[0]" [active]="activeLink == this.links[0]">Playlist</a>
+    <a mat-tab-link [routerLink]="'voting'" (click)="activeLink = this.links[1]" [active]="activeLink == this.links[1]">Voting</a>
+    <a mat-tab-link [routerLink]="'search'" (click)="activeLink = this.links[2]" [active]="activeLink == this.links[2]">Suggest a song</a>
+  </nav>
+  <mat-divider></mat-divider>
+<router-outlet></router-outlet>
+</body>

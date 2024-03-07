@@ -1,0 +1,33 @@
+<mat-list-item *ngIf="!hasSearched"><p>Search for your favorite Song/Artist to Add it to the Voting table</p></mat-list-item>
+
+<form class="form" *ngIf="!hasSearched" (submit)="$event.preventDefault()">
+<mat-form-field appearance="fill">
+    <mat-label>Search for...</mat-label>
+    <input matInput placeholder="z.B. Rattn Tattn" #search>
+</mat-form-field>
+<br>
+<button type="submit" mat-raised-button (click)="Search(search.value);search.value = ''"> Search </button>
+</form>
+
+
+<div *ngIf="isloaded">
+
+    <mat-list>
+        <mat-list-item *ngFor="let song of this.SongsList; let i =index">
+            <span matlistItemTitle class = ".mat-body-strong" matLine>{{song.name}}</span>
+            <span matListItemLine class=".mat-small" matLine>
+                <span *ngFor="let artist of song.artist; index as i">{{song.artist[i]}}<span *ngIf="i+1!=song.artist.length">, </span>
+                </span>
+            </span>
+            <span><button mat-raised-button (click)="Suggest(song.name, song.artist, song.uri);openSnackBar()"> Suggest </button></span>
+         </mat-list-item>
+    </mat-list>
+
+</div>
+
+<!--Add a Card displaying the succesful push to the votesSystem-->
+
+
+
+
+

@@ -1,0 +1,35 @@
+<div *ngIf="isloaded">
+
+    <mat-list>
+        <mat-list-item>
+            <h4>Currently Playing:</h4>
+        </mat-list-item>
+        <mat-list-item>
+            <span matlistItemTitle class=".mat-body-strong" matLine>{{this.SongsList[0].name}}</span>
+            <span matListItemLine class=".mat-small" matLine>
+                <span *ngFor="let artist of this.SongsList[0].artist; index as i">{{this.SongsList[0].artist[i]}}<span *ngIf="i+1!=this.SongsList[0].artist.length">, </span>
+                </span>
+            </span>
+
+
+        </mat-list-item>
+    </mat-list>
+<mat-divider></mat-divider>
+    <mat-list>
+        <mat-list-item>
+            <h4>Up Next:</h4>
+        </mat-list-item>
+        <mat-list-item *ngFor="let song of this.SongsList | slice:1; let i =index">
+            <span matlistItemTitle class = ".mat-body-strong" matLine>{{song.name}}</span>
+            <span matListItemLine class=".mat-small" matLine>
+                <span *ngFor="let artist of song.artist; index as i">{{song.artist[i]}}<span *ngIf="i+1!=song.artist.length">, </span>
+                </span>
+            </span><!--*ngFor="let artist of song.artist; index as i"-->
+         </mat-list-item>
+    </mat-list>
+
+</div>
+<div><br>
+    <mat-spinner class="spinner" *ngIf="!isloaded"></mat-spinner>
+
+</div>
