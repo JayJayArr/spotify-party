@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
 import FetchWrapper from 'src/Fetch-Wrapper';
-import QueryString = require('qs');
 import { compileNgModule } from '@angular/compiler';
+
+import QueryString = require('qs');
 
 @Component({
     selector: 'app-login',
@@ -14,9 +15,6 @@ export class LoginComponent implements OnInit {
     loggedin: boolean;
     scopes: string =
         'user-read-currently-playing user-read-playback-state user-modify-playback-state';
-    SpotifyAuth = new FetchWrapper('https://accounts.spotify.com');
-    SpotifyAPI = new FetchWrapper('https://api.spotify.com');
-    BackEnd = new FetchWrapper('https://localhost:3000');
 
     client_id = '3cfa90824096424db0388f2e569a2937';
     redirect_uri = 'http://localhost:3000';
@@ -38,7 +36,6 @@ export class LoginComponent implements OnInit {
                 client_id: this.client_id,
                 redirect_uri: this.redirect_uri,
                 scope: this.scopes,
-                //TODO: Add scopes variable for searching songs and accessing player
             });
     };
     /**
