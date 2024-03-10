@@ -2,22 +2,19 @@
     <p>Vote for the song(s) that you really &hearts;, otherwise suggest them ;)</p>
 </mat-list-item>
 <div *ngIf="isloaded">
-
     <mat-list>
-        <mat-list-item><span matlistItemTitle class=".mat-body-strong" matLine>Songs / Votes</span></mat-list-item>
+        <mat-list-item><span matListItemTitle class=".mat-body-strong" matLine>Songs / Votes</span></mat-list-item>
         <mat-list-item *ngFor="let song of this.SongsList; let i = index">
-            <span matlistItemTitle style='font-size:90%;' class=".mat-body-strong" matLine>{{song.name}}</span>
+            <span matListItemTitle style='font-size:90%;' class=".mat-body-strong" matLine>{{song.name}}</span>
             <span matListItemLine style='font-size:80%;' class=".mat-small" matLine>
                 <span *ngFor="let artist of song.artist; index as i">{{song.artist[i]}}<span
                         *ngIf="i+1!=song.artist.length">, </span>
                 </span>
             </span>
-            <span class="spacer"></span>
 
             <span style='font-size:60%;'>{{song.Voters[0]}}</span>
-            <span class="minispacer"></span>
 
-            <span><button [disabled]="song.Voters.includes(this.globalService.username)" mat-raised-button (click)="Vote(song.name, song.artist, song.uri)"> {{song.votes}} </button></span>
+            <button style="float: right;" [disabled]="song.Voters.includes(this.globalService.username)" mat-raised-button (click)="Vote(song.name, song.artist, song.uri)"> {{song.votes}} </button>
         </mat-list-item>
     </mat-list>
 

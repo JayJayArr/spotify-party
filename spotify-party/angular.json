@@ -69,15 +69,15 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "move-safe:build",
+            "buildTarget": "move-safe:build",
             "proxyConfig": "src/proxy.conf.json"
           },
           "configurations": {
             "production": {
-              "browserTarget": "spotify-party:build:production"
+              "buildTarget": "spotify-party:build:production"
             },
             "development": {
-              "browserTarget": "spotify-party:build:development"
+              "buildTarget": "spotify-party:build:development"
             }
           },
           "defaultConfiguration": "development"
