@@ -43,16 +43,16 @@ export class VotesService {
   getVotes(): { name: string; artist: string[]; uri: string; votes: number }[] {
     return this.SongsList;
   }
-  @Cron('*/5 * * * *')
+  @Cron('*/1 * * * *')
   pushSong() {
     let bestsong;
-    if (this.SongsList[0].uri) {
+    let index;
+    if (this.SongsList.length) {
       bestsong = this.SongsList.reduce((prev, current) => {
         return prev.votes > current.votes ? prev : current;
       });
+      index = this.SongsList.map((item) => item.uri).indexOf(bestsong.uri);
     }
-    const index = this.SongsList.map((item) => item.uri).indexOf(bestsong.uri);
-    console.log(index);
     try {
       fetch(
         'https://api.spotify.com/v1/me/player/queue?' +
@@ -74,6 +74,5 @@ export class VotesService {
       console.log(error);
     }
     this.SongsList.splice(index, 1);
-    console.log(this.SongsList);
   }
 }

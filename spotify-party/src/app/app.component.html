@@ -1,6 +1,4 @@
 <body class="mat-app-background">
-
-
 <p>
   <mat-toolbar color="primary">
     <span style='font-size:80%;'>Spotify-Party</span>
@@ -13,11 +11,12 @@
   </mat-toolbar>
 </p>
 
-<nav mat-tab-nav-bar >
+<nav mat-tab-nav-bar [tabPanel]="tabPanel">
     <a mat-tab-link [routerLink]="''" (click)="activeLink = this.links[0]" [active]="activeLink == this.links[0]">Playlist</a>
     <a mat-tab-link [routerLink]="'voting'" (click)="activeLink = this.links[1]" [active]="activeLink == this.links[1]">Voting</a>
     <a mat-tab-link [routerLink]="'search'" (click)="activeLink = this.links[2]" [active]="activeLink == this.links[2]">Suggest a song</a>
   </nav>
   <mat-divider></mat-divider>
+  <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 <router-outlet></router-outlet>
 </body>

@@ -1,7 +1,5 @@
 <h1>Please login to Spotify-Party</h1>
-
-
-
+<div>
 <form class = "form" *ngIf="loggedin != true" (submit)="$event.preventDefault()">
     <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
@@ -14,9 +12,8 @@
       </mat-form-field>
         <br>
       <button type = "submit" mat-raised-button (click)="LoginUser(username.value, password.value)"> Login </button>
-
-
 </form>
+</div>
 <div *ngIf="loggedin">
     <h1 >Logged in as Admin</h1>
     <h2>Spotify-Party is linked to: </h2>

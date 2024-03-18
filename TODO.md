@@ -1,4 +1,3 @@
-- merge both folders into one
-- update backend to serve the FrontEnd via Serve Static
+- correct frontend errors
 - change frontend to use a service
 - change frontend to use the angular built in HttpClient

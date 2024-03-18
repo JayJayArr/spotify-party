@@ -17,6 +17,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SearchComponent } from './search/search.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 @NgModule({
     declarations: [
         AppComponent,
@@ -37,7 +38,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
         MatListModule,
         MatSnackBarModule,
     ],
-    providers: [],
+    providers: [
+    provideAnimationsAsync()
+  ],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
