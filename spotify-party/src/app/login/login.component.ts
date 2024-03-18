@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 
-import FetchWrapper from 'src/Fetch-Wrapper';
-import { compileNgModule } from '@angular/compiler';
-
 import QueryString = require('qs');
 
 @Component({
@@ -17,7 +14,7 @@ export class LoginComponent implements OnInit {
         'user-read-currently-playing user-read-playback-state user-modify-playback-state';
 
     client_id = '3cfa90824096424db0388f2e569a2937';
-    redirect_uri = 'http://localhost:3000';
+    redirect_uri = 'http://localhost:3000/login';
 
     constructor() {}
 

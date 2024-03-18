@@ -1,13 +1,4 @@
-import { Controller, Get, Query, Redirect } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller } from '@nestjs/common';
 
 @Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Redirect('http://localhost:4200/login')
-  @Get()
-  Authenticate(@Query('code') code: string): string {
-    return this.appService.Authenticate(code);
-  }
-}
+export class AppController {}

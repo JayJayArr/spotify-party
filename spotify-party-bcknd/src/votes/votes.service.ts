@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule/dist';
+import { Injectable } from '@nestjs/common';
 import QueryString = require('qs');
 
 @Injectable()
@@ -43,7 +43,7 @@ export class VotesService {
   getVotes(): { name: string; artist: string[]; uri: string; votes: number }[] {
     return this.SongsList;
   }
-  @Cron('*/2 * * * *')
+  @Cron('*/5 * * * *')
   pushSong() {
     let bestsong;
     if (this.SongsList[0].uri) {
