@@ -3,23 +3,6 @@
 @import '@angular/material';
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap");
 
-body {background-color: #303030;}
-.spinner {
-    padding: 0px 0px 0px 0px;
-}
-
-.spacer {
-    flex: 500 0 10px;
-  }
-
-.form {
-    min-width: 150px;
-    max-width: 500px;
-    width: 100%;
-  }
-.minispacer {
-    flex: 1 0 5px;
-}
-
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {background-color: #303030; margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;}
+
