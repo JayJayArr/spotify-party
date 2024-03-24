@@ -1,15 +1,16 @@
-import { JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
-import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
+import { JwtService } from '@nestjs/jwt';
+import { Module } from '@nestjs/common';
+//import { jwtConstants } from './constants';
+import { readFileSync } from 'node:fs';
 
 @Module({
   imports: [
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
+      secret: readFileSync('./src/keys/jwtRSA256-private.pem'),
       signOptions: { expiresIn: '48h' },
     }),
   ],

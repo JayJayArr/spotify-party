@@ -22,7 +22,9 @@ export class AuthService {
     };
     console.log(payload);
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        secret: this.privateKey,
+      }),
     };
     //jwt.sign(payload, process.env.SECRET_KEY);
   }
