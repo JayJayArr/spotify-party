@@ -43,7 +43,7 @@ export class VotesService {
   getVotes(): { name: string; artist: string[]; uri: string; votes: number }[] {
     return this.SongsList;
   }
-  @Cron('*/1 * * * *')
+  @Cron('*/5 * * * *')
   pushSong() {
     let bestsong;
     let index;

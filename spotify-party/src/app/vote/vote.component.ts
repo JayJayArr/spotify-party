@@ -1,8 +1,24 @@
+import { Component, OnInit, Inject } from '@angular/core';
+
 import { GlobalService } from './../global.service';
 import { JwtService } from './../jwt.service';
-import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from 'src/environments/environment';
+import {
+    MatDialog,
+    MAT_DIALOG_DATA,
+    MatDialogRef,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+} from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
+import { NgFor, NgIf } from '@angular/common';
+
+export interface DialogData {
+    Voters: string[];
+}
 
 @Component({
     selector: 'app-vote',
@@ -22,7 +38,8 @@ export class VoteComponent implements OnInit {
     constructor(
         public globalService: GlobalService,
         private jwtService: JwtService,
-        private _snackBar: MatSnackBar
+        private _snackBar: MatSnackBar,
+        public dialog: MatDialog
     ) {
         this.getJWT();
     }
@@ -86,6 +103,15 @@ export class VoteComponent implements OnInit {
         });
     }
 
+    openDialog(voters: string[]): void {
+        const dialogRef = this.dialog.open(VoteDialog, {
+            data: { Voters: voters },
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('The dialog was closed');
+        });
+    }
+
     getJWT() {
         if (!localStorage.getItem('token')) {
             try {
@@ -114,5 +140,30 @@ export class VoteComponent implements OnInit {
             this.globalService.username =
                 this.jwtService.DecodeToken(token)?.sub;
         }
+    }
+}
+
+@Component({
+    selector: 'vote-dialog',
+    templateUrl: 'vote.dialog.html',
+    standalone: true,
+    imports: [
+        MatDialogTitle,
+        MatDialogContent,
+        MatDialogActions,
+        MatDialogClose,
+        MatListModule,
+        NgFor,
+        NgIf,
+    ],
+})
+export class VoteDialog {
+    constructor(
+        public dialogRef: MatDialogRef<VoteDialog>,
+        @Inject(MAT_DIALOG_DATA) public data: DialogData
+    ) {}
+
+    onNoClick(): void {
+        this.dialogRef.close();
     }
 }

@@ -1,23 +1,22 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-
+import { AppRoutingModule } from './app-routing.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserModule } from '@angular/platform-browser';
 import { LoginComponent } from './login/login.component';
-import { PlaylistComponent } from './playlist/playlist.component';
-import { VoteComponent } from './vote/vote.component';
-
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SearchComponent } from './search/search.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { NgModule } from '@angular/core';
+import { PlaylistComponent } from './playlist/playlist.component';
+import { SearchComponent } from './search/search.component';
+import { VoteComponent } from './vote/vote.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -37,10 +36,9 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
         MatProgressSpinnerModule,
         MatListModule,
         MatSnackBarModule,
+        MatDialogModule,
     ],
-    providers: [
-    provideAnimationsAsync()
-  ],
+    providers: [provideAnimationsAsync()],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
