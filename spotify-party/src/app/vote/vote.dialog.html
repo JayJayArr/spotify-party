@@ -1,6 +1,5 @@
 <mat-list>
-    <mat-list-item matListItemTitle> Suggested by: {{data.Voters[0]}}</mat-list-item>
-    <mat-list-item *ngIf="data.Voters.length > 1" matListItemTitle> Voters: </mat-list-item>
-    <mat-list-item *ngFor="let voter of data.Voters, index as i" matListItemTitle> <span *ngIf="i!=0">{{voter}}</span></mat-list-item>
+    <mat-list-item matListItemTitle>Voters: </mat-list-item>
+    <mat-list-item *ngFor="let voter of data.Voters, index as i" matListItemTitle>{{voter}}</mat-list-item>
     <mat-divider></mat-divider>
 </mat-list>
