@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import FetchWrapper from 'src/Fetch-Wrapper';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+//import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from 'src/environments/environment';
 
 @Component({
