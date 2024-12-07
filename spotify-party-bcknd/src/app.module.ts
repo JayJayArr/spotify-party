@@ -15,7 +15,6 @@ import { join } from 'path';
     ScheduleModule.forRoot(),
     AuthModule,
     LoginModule,
-    AppModule,
     SongsModule,
     VotesModule,
     SearchModule,
