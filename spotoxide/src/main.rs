@@ -2,8 +2,8 @@ use axum::routing::get;
 use rmpv::Value;
 use rnglib::{Language, RNG};
 use socketioxide::{
-    extract::{AckSender, Data, SocketRef},
-    SocketIo,
+    extract::{AckSender, Data, SocketRef, State},
+    SocketIoBuilder,
 };
 use song_queue::SongQueue;
 use tracing::info;
@@ -29,9 +29,11 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
     socket.on(
         "request-username",
-        |socket: SocketRef, Data::<Value>(data)| {
+        |socket: SocketRef, Data::<Value>(data), State(rng): State<RNG>| {
+            let name = rng.generate_name();
             info!(?data, "Request for username ");
-            socket.emit("username", "test").ok();
+            info!(?name, "Username assigned");
+            socket.emit("username", &name).ok();
         },
     )
 }
@@ -39,10 +41,10 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-
     let rng = RNG::try_from(&Language::Fantasy).unwrap();
+    let mut queue = SongQueue::new();
     //TODO: inject a reference to rng into every socket using extension
-    let (layer, io) = SocketIo::new_layer();
+    let (layer, io) = SocketIoBuilder::new().with_state(rng).build_layer();
 
     io.ns("/", on_connect);
 
