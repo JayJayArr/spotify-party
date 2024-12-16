@@ -8,6 +8,8 @@ use socketioxide::{
 use song_queue::SongQueue;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
+use user::User;
+use votes::Votes;
 mod song;
 mod song_queue;
 mod user;
@@ -29,22 +31,40 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
     socket.on(
         "request-username",
-        |socket: SocketRef, Data::<Value>(data), State(rng): State<RNG>| {
+        |socket: SocketRef,
+         Data::<Value>(data),
+         State(rng): State<RNG>,
+         State(mut users): State<Vec<User>>| {
             let name = rng.generate_name();
             info!(?data, "Request for username ");
+            users.push(User {
+                username: name.clone(),
+                socket: socket.clone(),
+            });
             info!(?name, "Username assigned");
             socket.emit("username", &name).ok();
         },
-    )
+    );
+    socket.on_disconnect(|socket: SocketRef, State(mut users): State<Vec<User>>| {
+        //remove the disconnected socket from the users Vec
+        users.retain(|x| x.socket != socket);
+    });
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-    let rng = RNG::try_from(&Language::Fantasy).unwrap();
-    let mut queue = SongQueue::new();
-    //TODO: inject a reference to rng into every socket using extension
-    let (layer, io) = SocketIoBuilder::new().with_state(rng).build_layer();
+    let rng = RNG::from(&Language::Fantasy);
+    let queue = SongQueue::new();
+    let users: Vec<User> = Vec::new();
+    let votes = Votes::new();
+
+    let (layer, io) = SocketIoBuilder::new()
+        .with_state(rng)
+        .with_state(users)
+        .with_state(queue)
+        .with_state(votes)
+        .build_layer();
 
     io.ns("/", on_connect);
 
