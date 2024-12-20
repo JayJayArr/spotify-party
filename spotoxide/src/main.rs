@@ -2,9 +2,10 @@ use axum::routing::get;
 use rmpv::Value;
 use rnglib::{Language, RNG};
 use socketioxide::{
-    extract::{AckSender, Data, SocketRef, State},
+    extract::{Data, SocketRef, State, TryData},
     SocketIoBuilder,
 };
+use song::Song;
 use song_queue::SongQueue;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
@@ -24,10 +25,16 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
         socket.emit("message-back", &data).ok();
     });
 
-    socket.on("message-with-ack", |Data::<Value>(data), ack: AckSender| {
-        info!(?data, "Received event");
-        ack.send(&data).ok();
-    });
+    socket.on(
+        "request-song",
+        |socket: SocketRef, TryData::<Song>(song)| {
+            info!(?song, "Received event");
+            let _ = match song {
+                Ok(_song) => socket.emit("message", "got message for song request"),
+                Err(_err) => socket.emit("error", "Song is missing or faulty"),
+            };
+        },
+    );
 
     socket.on(
         "request-username",

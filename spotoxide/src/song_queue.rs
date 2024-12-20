@@ -4,7 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 
 use crate::song::Song;
-#[derive(Default, Clone, Serialize)]
+#[derive(Default, Clone, Serialize, Debug)]
 pub struct SongQueue {
     last_updated: DateTime<Utc>,
     songs: VecDeque<Song>, //dont forget to truncate dis bich

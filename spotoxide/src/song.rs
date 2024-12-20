@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Clone)]
+#[derive(Default, Serialize, Clone, Debug, Deserialize)]
 pub struct Song {
     title: String,
     artists: Vec<String>,
