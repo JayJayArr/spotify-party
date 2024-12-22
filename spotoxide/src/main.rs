@@ -1,15 +1,18 @@
+use std::collections::HashMap;
+
 use axum::routing::get;
 use rmpv::Value;
 use rnglib::{Language, RNG};
 use socketioxide::{
     extract::{Data, SocketRef, State, TryData},
+    socket::Sid,
     SocketIoBuilder,
 };
 use song::Song;
 use song_queue::SongQueue;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
-use user::User;
+use user::{User, Usernames};
 use votes::Votes;
 mod song;
 mod song_queue;
@@ -27,12 +30,12 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
     socket.on(
         "request-song",
-        |socket: SocketRef, TryData::<Song>(song)| {
-            info!(?song, "Received event");
+        |socket: SocketRef, State(votes): State<Votes>, TryData::<Song>(song)| {
             let _ = match song {
                 Ok(_song) => socket.emit("message", "got message for song request"),
                 Err(_err) => socket.emit("error", "Song is missing or faulty"),
             };
+            todo!()
         },
     );
 
@@ -41,21 +44,25 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
         |socket: SocketRef,
          Data::<Value>(data),
          State(rng): State<RNG>,
-         State(mut users): State<Vec<User>>| {
+         State(mut users): State<HashMap<Sid, User>>| {
             let name = rng.generate_name();
             info!(?data, "Request for username ");
-            users.push(User {
-                username: name.clone(),
-                socket: socket.clone(),
-            });
+            users.insert(
+                socket.id,
+                User {
+                    username: name.clone(),
+                },
+            );
             info!(?name, "Username assigned");
             socket.emit("username", &name).ok();
         },
     );
-    socket.on_disconnect(|socket: SocketRef, State(mut users): State<Vec<User>>| {
-        //remove the disconnected socket from the users Vec
-        users.retain(|x| x.socket != socket);
-    });
+    socket.on_disconnect(
+        |socket: SocketRef, State(mut users): State<HashMap<Sid, User>>| {
+            //remove the disconnected socket from the users Vec
+            users.remove(&socket.id);
+        },
+    );
 }
 
 #[tokio::main]
@@ -63,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
-    let users: Vec<User> = Vec::new();
+    let users = Usernames::new();
     let votes = Votes::new();
 
     let (layer, io) = SocketIoBuilder::new()
