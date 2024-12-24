@@ -13,6 +13,6 @@ impl Votes {
             true => self.0.get_mut(&songid).unwrap(),
             false => &mut self.0.insert(songid, Vec::new()).unwrap(),
         };
-        // self.0.insert();
+        votes.push(user);
     }
 }

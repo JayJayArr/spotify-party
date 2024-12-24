@@ -30,12 +30,16 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
     socket.on(
         "request-song",
-        |socket: SocketRef, State(votes): State<Votes>, TryData::<Song>(song)| {
+        |socket: SocketRef,
+         State(mut votes): State<Votes>,
+         State(users): State<HashMap<Sid, User>>,
+         TryData::<Song>(song)| {
             let _ = match song {
-                Ok(_song) => socket.emit("message", "got message for song request"),
-                Err(_err) => socket.emit("error", "Song is missing or faulty"),
+                Ok(ref _song) => socket.emit("message", "got message for song request"),
+                Err(ref _err) => socket.emit("error", "Song is missing or faulty"),
             };
-            todo!()
+            let username = users.get(&socket.id).unwrap();
+            votes.push(song.unwrap().uri, username.clone());
         },
     );
 
