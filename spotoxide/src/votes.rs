@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{song::SongId, user::User};
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Votes(HashMap<SongId, Vec<User>>);
 impl Votes {
     pub fn new() -> Self {

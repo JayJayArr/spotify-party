@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use axum::routing::get;
 use rmpv::Value;
 use rnglib::{Language, RNG};
+use serde_json::json;
 use socketioxide::{
     extract::{Data, SocketRef, State, TryData},
     socket::Sid,
@@ -10,6 +9,7 @@ use socketioxide::{
 };
 use song::Song;
 use song_queue::SongQueue;
+use std::collections::HashMap;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
@@ -36,10 +36,15 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
          TryData::<Song>(song)| {
             let _ = match song {
                 Ok(ref _song) => socket.emit("message", "got message for song request"),
-                Err(ref _err) => socket.emit("error", "Song is missing or faulty"),
+                Err(ref _err) => {
+                    let _ = socket.emit("error", "Song is missing or faulty");
+                    return;
+                }
             };
             let username = users.get(&socket.id).unwrap();
+            //at this point we can be sure that a song was actually sent
             votes.push(song.unwrap().uri, username.clone());
+            socket.emit("votes", &json!(&votes));
         },
     );
 
