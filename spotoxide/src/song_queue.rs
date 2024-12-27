@@ -6,8 +6,10 @@ use serde::Serialize;
 use crate::song::Song;
 #[derive(Default, Clone, Serialize, Debug)]
 pub struct SongQueue {
+    //last_updated will be checked for the broadcast,
+    //if the queue was not updated in the relevan timeframe, why broadcast it
     last_updated: DateTime<Utc>,
-    songs: VecDeque<Song>, //dont forget to truncate dis bich
+    songs: VecDeque<Song>,
 }
 
 impl SongQueue {
@@ -16,5 +18,23 @@ impl SongQueue {
             last_updated: chrono::offset::Utc::now(),
             songs: VecDeque::new(),
         }
+    }
+    //used to update the songs without replacing them
+    pub fn push(&mut self, song: Song) {
+        self.last_updated = chrono::offset::Utc::now();
+        self.songs.push_back(song);
+        //truncate the songs to be a max of
+        self.songs.truncate(20);
+    }
+
+    pub fn replace(&mut self, songs: Vec<Song>) {
+        self.last_updated = chrono::offset::Utc::now();
+        self.songs.clear();
+        self.songs.append(&mut VecDeque::from(songs));
+    }
+
+    pub fn skip(&mut self) {
+        self.last_updated = chrono::offset::Utc::now();
+        self.songs.pop_front();
     }
 }

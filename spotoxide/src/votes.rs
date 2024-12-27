@@ -15,6 +15,8 @@ impl Votes {
             true => self.0.get_mut(&songid).unwrap(),
             false => &mut self.0.insert(songid, Vec::new()).unwrap(),
         };
-        votes.push(user);
+        if !votes.contains(&user) {
+            votes.push(user);
+        }
     }
 }

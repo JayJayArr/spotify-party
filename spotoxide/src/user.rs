@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use socketioxide::socket::Sid;
 use std::{collections::HashMap, fmt};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct User {
     pub username: String,
 }
@@ -13,8 +13,8 @@ impl fmt::Display for User {
     }
 }
 
-#[derive(Clone)]
-pub struct Usernames(HashMap<Sid, User>);
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Usernames(pub HashMap<Sid, User>);
 
 impl Usernames {
     pub fn new() -> Self {
