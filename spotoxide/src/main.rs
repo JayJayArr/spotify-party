@@ -17,10 +17,8 @@ mod song_queue;
 mod user;
 mod votes;
 
-fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
+fn on_connect(socket: SocketRef) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
-    socket.emit("auth", &data).ok();
-
     socket.on(
         "request-song",
         |socket: SocketRef,
