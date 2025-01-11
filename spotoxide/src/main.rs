@@ -1,4 +1,5 @@
 use axum::routing::get;
+use dotenv::dotenv;
 use rmpv::Value;
 use rnglib::{Language, RNG};
 use serde_json::json;
@@ -68,6 +69,10 @@ fn on_connect(socket: SocketRef) {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    dotenv().ok();
+    let client_id =
+        std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
+    info!(?client_id, "Spotify Client Id");
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
     let usernames = Usernames::new();

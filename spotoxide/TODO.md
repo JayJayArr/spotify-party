@@ -5,5 +5,5 @@ TODO:
 - [ ] push the changing queue to the clients
 - [ ] handle login
 - [ ] get the current songs from the spotify API
-- [ ] broadcast the SongQueue every x seconds to the clients
+- [ ] broadcast the SongQueue every x seconds to the clients, check if it was updated in the relevant timeframe
 - [ ]
