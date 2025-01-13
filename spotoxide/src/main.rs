@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
-use axum::{response::Redirect, routing::get};
+use axum::routing::get;
 use dotenv::dotenv;
+use handler::*;
 use rmpv::Value;
 use rnglib::{Language, RNG};
 use serde_json::json;
@@ -11,10 +12,12 @@ use socketioxide::{
 };
 use song::Song;
 use song_queue::SongQueue;
+use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
 use votes::Votes;
+mod handler;
 mod song;
 mod song_queue;
 mod user;
@@ -76,31 +79,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_id =
         std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
     info!(?client_id, "Spotify Client Id");
-    store.insert("client_id", client_id);
+    store.insert("client_id", client_id.clone());
     let client_secret =
         std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
     info!(?client_secret, "Spotify Client Secret");
-    store.insert("client_secret", client_secret);
+    store.insert("client_secret", client_secret.clone());
     let username = std::env::var("SPOTIFY_USERNAME").expect("SPOTIFY_USERNAME must be specified");
     info!(?username, "Spotify username");
     store.insert("client_username", username);
     let password = std::env::var("SPOTIFY_PASSWORD").expect("SPOTIFY_PASSWORD must be specified");
     info!(?password, "Spotify username");
     store.insert("client_password", password);
-    //Start the authorization code flow
-    let scope = "user-read-currently-playing user-read-playback-state user-modify-playback-state";
-    let client = reqwest::Client::new();
 
-    let res = client
-        .get("https://api.spotify.com/authorize?")
-        .send()
-        .await;
-    // let mut authroute = "https://api.spotify.com/authorize?".to_owned();
-    // authroute.push_str("response_type=code");
-    match res {
-        Ok(content) => info!(?content, "auth content"),
-        Err(err) => info!(?err, "auth err"),
-    }
+    //Start the authorization code flow
+    let redirect_uri = RedirectUrl::new("localhost:3000".to_owned())?;
+    let auto_refresh = true;
+    let scopes = vec![
+        "user-library-read",
+        "playlist-read-private",
+        "user-read-currently-playing",
+        "user-read-playback-state",
+        "user-modify-playback-state",
+    ];
+    let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
+
+    //TODO: make this client available to the routes
+    let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    let redirecturlstring = url.to_string();
+
+    println!("{:?}", client);
+
+    // Finally, exchange the auth code for an access token
+    // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
+    //
+    // let user_playlists = spotify.current_user_playlists().limit(5).get().await?;
+    // info!(?user_playlists, "playlists");
 
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
@@ -118,10 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route(
-            "/login",
-            get(|| async { Redirect::permanent("https://api.spotify.com/authorize?") }),
-        )
+        .route("/login", get(|| async { redirecturlstring }))
+        .route("/redirect", get(redirect_handler))
         .layer(layer);
 
     info!("Starting server");
