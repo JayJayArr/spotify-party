@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use axum::routing::get;
 use dotenv::dotenv;
@@ -91,8 +91,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!(?password, "Spotify username");
     store.insert("client_password", password);
 
+    let rng = RNG::from(&Language::Fantasy);
+    let queue = SongQueue::new();
+    let usernames = Usernames::new();
+    let votes = Votes::new();
+
     //Start the authorization code flow
-    let redirect_uri = RedirectUrl::new("localhost:3000".to_owned())?;
+    let redirect_uri = RedirectUrl::new("http://localhost:3000/redirect".to_owned())?;
     let auto_refresh = true;
     let scopes = vec![
         "user-library-read",
@@ -103,22 +108,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ];
     let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
 
-    //TODO: make this client available to the routes
     let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    let clientarc: Arc<
+        spotify_rs::client::Client<
+            spotify_rs::auth::UnAuthenticated,
+            AuthCodeFlow,
+            spotify_rs::auth::CsrfVerifier,
+        >,
+    > = Arc::new(client);
     let redirecturlstring = url.to_string();
-
-    println!("{:?}", client);
 
     // Finally, exchange the auth code for an access token
     // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
     //
     // let user_playlists = spotify.current_user_playlists().limit(5).get().await?;
     // info!(?user_playlists, "playlists");
-
-    let rng = RNG::from(&Language::Fantasy);
-    let queue = SongQueue::new();
-    let usernames = Usernames::new();
-    let votes = Votes::new();
 
     let (layer, io) = SocketIoBuilder::new()
         .with_state(rng)
@@ -133,6 +137,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
+        .with_state(clientarc.clone())
         .layer(layer);
 
     info!("Starting server");
