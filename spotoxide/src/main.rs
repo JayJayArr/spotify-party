@@ -13,6 +13,7 @@ use socketioxide::{
 use song::Song;
 use song_queue::SongQueue;
 use spotify_rs::{client::Client, AuthCodeClient, AuthCodeFlow, RedirectUrl};
+use tokio::sync::Mutex;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
@@ -81,6 +82,17 @@ fn on_connect(socket: SocketRef) {
     });
 }
 
+pub struct Db {
+    users: Usernames,
+    votes: Votes,
+    rng: RNG,
+    client: spotify_rs::client::Client<
+        spotify_rs::auth::UnAuthenticated,
+        AuthCodeFlow,
+        spotify_rs::auth::CsrfVerifier,
+    >,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
@@ -119,13 +131,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
 
     let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
-    let clientarc: Arc<
-        spotify_rs::client::Client<
-            spotify_rs::auth::UnAuthenticated,
-            AuthCodeFlow,
-            spotify_rs::auth::CsrfVerifier,
-        >,
-    > = Arc::new(client);
+    // let clientarc: Arc<
+    //     spotify_rs::client::Client<
+    //         spotify_rs::auth::UnAuthenticated,
+    //         AuthCodeFlow,
+    //         spotify_rs::auth::CsrfVerifier,
+    //     >,
+    // > = Arc::new(client);
+    let db = Db {
+        users: usernames.clone(),
+        votes: votes.clone(),
+        rng: rng.clone(),
+        client: client,
+    };
     let redirecturlstring = url.to_string();
 
     // Finally, exchange the auth code for an access token
@@ -147,7 +165,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
-        .with_state(clientarc)
+        .with_state(Arc::new(Mutex::new(db)))
         .layer(layer);
 
     info!("Starting server");

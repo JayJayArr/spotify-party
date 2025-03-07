@@ -5,17 +5,12 @@ use axum::{
     response::IntoResponse,
 };
 use reqwest::StatusCode;
+use tokio::sync::Mutex;
+
+use crate::Db;
 
 pub async fn redirect_handler(
-    State(clientarc): State<
-        Arc<
-            spotify_rs::client::Client<
-                spotify_rs::auth::UnAuthenticated,
-                spotify_rs::AuthCodeFlow,
-                spotify_rs::auth::CsrfVerifier,
-            >,
-        >,
-    >,
+    State(db): State<Arc<Mutex<Db>>>,
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
     let state = match params.get("state") {
@@ -26,10 +21,12 @@ pub async fn redirect_handler(
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
     };
-    println!("{:?}", params);
+    // println!("{:?}", params);
     println!("{:?}", state);
     println!("{:?}", code);
-    // clientarc.authenticate(code, "csrf_token").await.unwrap();
+    let client = &mut db.lock().await.client;
+    client.auto_refresh = true;
+    db.lock().await.client = client.clone().authenticate(code, state).await.unwrap();
 
     StatusCode::OK
     // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
