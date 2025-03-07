@@ -19,4 +19,8 @@ impl Votes {
             votes.push(user);
         }
     }
+
+    pub fn get(&self, id: SongId) -> Option<&Vec<User>> {
+        self.0.get(&id)
+    }
 }
