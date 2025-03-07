@@ -37,4 +37,8 @@ impl SongQueue {
         self.last_updated = chrono::offset::Utc::now();
         self.songs.pop_front();
     }
+
+    pub fn get(&self) -> VecDeque<Song> {
+        self.songs.clone()
+    }
 }

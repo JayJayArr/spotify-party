@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7.9"
+axum = {version = "0.7.9", features = ["macros", "tokio"]}
 chrono = {version = "0.4.39", features= ["serde"]}
 dotenv = "0.15.0"
 random_name_generator = "0.3.6"

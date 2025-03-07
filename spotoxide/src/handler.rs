@@ -29,11 +29,7 @@ pub async fn redirect_handler(
     println!("{:?}", params);
     println!("{:?}", state);
     println!("{:?}", code);
-    // let mut spotify = clientarc
-    //     .clone()
-    //     .authenticate(code, "csrf_token")
-    //     .await
-    //     .unwrap();
+    // clientarc.authenticate(code, "csrf_token").await.unwrap();
 
     StatusCode::OK
     // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;

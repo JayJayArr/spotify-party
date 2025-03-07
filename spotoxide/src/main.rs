@@ -12,7 +12,7 @@ use socketioxide::{
 };
 use song::Song;
 use song_queue::SongQueue;
-use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
+use spotify_rs::{client::Client, AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
@@ -25,6 +25,16 @@ mod votes;
 
 fn on_connect(socket: SocketRef) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
+
+    socket.on(
+        "songs",
+        |socket: SocketRef, State(queue): State<SongQueue>| {
+            let songs = &queue.get();
+            info!("get songs {:?}", songs);
+            let _ = socket.emit("songs", songs);
+        },
+    );
+
     socket.on(
         "request-song",
         |socket: SocketRef,
@@ -84,12 +94,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
     info!(?client_secret, "Spotify Client Secret");
     store.insert("client_secret", client_secret.clone());
-    let username = std::env::var("SPOTIFY_USERNAME").expect("SPOTIFY_USERNAME must be specified");
-    info!(?username, "Spotify username");
-    store.insert("client_username", username);
-    let password = std::env::var("SPOTIFY_PASSWORD").expect("SPOTIFY_PASSWORD must be specified");
-    info!(?password, "Spotify username");
-    store.insert("client_password", password);
+    // let username = std::env::var("SPOTIFY_USERNAME").expect("SPOTIFY_USERNAME must be specified");
+    // info!(?username, "Spotify username");
+    // store.insert("client_username", username);
+    // let password = std::env::var("SPOTIFY_PASSWORD").expect("SPOTIFY_PASSWORD must be specified");
+    // info!(?password, "Spotify username");
+    // store.insert("client_password", password);
 
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
@@ -137,7 +147,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
-        .with_state(clientarc.clone())
+        .with_state(clientarc)
         .layer(layer);
 
     info!("Starting server");
