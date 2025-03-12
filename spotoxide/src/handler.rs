@@ -6,6 +6,7 @@ use axum::{
 };
 use reqwest::StatusCode;
 use tokio::sync::Mutex;
+use tracing::info;
 
 use crate::Db;
 
@@ -24,9 +25,25 @@ pub async fn redirect_handler(
     // println!("{:?}", params);
     println!("{:?}", state);
     println!("{:?}", code);
-    let client = &mut db.lock().await.client;
-    client.auto_refresh = true;
-    db.lock().await.client = client.clone().authenticate(code, state).await.unwrap();
+    let client_unauth = &mut db.lock().await.client_unauth;
+    let mut client = &mut db.lock().await.client;
+    client_unauth.auto_refresh = true;
+    let mut spotify = client_unauth
+        .clone()
+        .authenticate(code, state)
+        .await
+        .unwrap();
+    client = &mut Some(spotify);
+
+    // let user_playlists = spotify
+    //     .current_user_playlists()
+    //     .limit(5)
+    //     .get()
+    //     .await
+    //     .unwrap();
+    // info!(?user_playlists, "playlists");
+    // let currently_playing = spotify.get_user_queue().await.unwrap();
+    // info!(?currently_playing, "currently_playing");
 
     StatusCode::OK
     // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;

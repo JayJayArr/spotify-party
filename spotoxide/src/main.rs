@@ -86,10 +86,17 @@ pub struct Db {
     users: Usernames,
     votes: Votes,
     rng: RNG,
-    client: spotify_rs::client::Client<
+    client_unauth: spotify_rs::client::Client<
         spotify_rs::auth::UnAuthenticated,
         AuthCodeFlow,
         spotify_rs::auth::CsrfVerifier,
+    >,
+    client: Option<
+        spotify_rs::client::Client<
+            spotify_rs::auth::Token,
+            AuthCodeFlow,
+            spotify_rs::auth::NoVerifier,
+        >,
     >,
 }
 
@@ -142,7 +149,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         users: usernames.clone(),
         votes: votes.clone(),
         rng: rng.clone(),
-        client: client,
+        client_unauth: client,
+        client: None,
     };
     let redirecturlstring = url.to_string();
 
