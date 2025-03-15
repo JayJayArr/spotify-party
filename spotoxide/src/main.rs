@@ -14,6 +14,7 @@ use song::Song;
 use song_queue::SongQueue;
 use spotify_rs::{client::Client, AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tokio::sync::Mutex;
+use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
@@ -160,7 +161,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let user_playlists = spotify.current_user_playlists().limit(5).get().await?;
     // info!(?user_playlists, "playlists");
 
-    let (layer, io) = SocketIoBuilder::new()
+    let (iolayer, io) = SocketIoBuilder::new()
         .with_state(rng)
         .with_state(usernames)
         .with_state(queue)
@@ -174,7 +175,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
         .with_state(Arc::new(Mutex::new(db)))
-        .layer(layer);
+        .layer(iolayer)
+        .layer(CorsLayer::permissive());
 
     info!("Starting server");
 

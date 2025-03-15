@@ -7,7 +7,7 @@ use crate::song::Song;
 #[derive(Default, Clone, Serialize, Debug)]
 pub struct SongQueue {
     //last_updated will be checked for the broadcast,
-    //if the queue was not updated in the relevan timeframe, why broadcast it
+    //if the queue was not updated in the relevant timeframe, why broadcast it
     last_updated: DateTime<Utc>,
     songs: VecDeque<Song>,
 }
