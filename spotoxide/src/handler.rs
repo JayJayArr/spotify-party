@@ -6,7 +6,6 @@ use axum::{
 };
 use reqwest::StatusCode;
 use tokio::sync::Mutex;
-use tracing::info;
 
 use crate::Db;
 
@@ -28,7 +27,7 @@ pub async fn redirect_handler(
     let client_unauth = &mut db.lock().await.client_unauth;
     let mut client = &mut db.lock().await.client;
     client_unauth.auto_refresh = true;
-    let mut spotify = client_unauth
+    let spotify = client_unauth
         .clone()
         .authenticate(code, state)
         .await

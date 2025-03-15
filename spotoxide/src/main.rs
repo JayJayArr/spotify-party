@@ -7,12 +7,12 @@ use rmpv::Value;
 use rnglib::{Language, RNG};
 use serde_json::json;
 use socketioxide::{
-    extract::{Data, SocketRef, State, TryData},
     SocketIo, SocketIoBuilder,
+    extract::{Data, SocketRef, State, TryData},
 };
 use song::Song;
 use song_queue::SongQueue;
-use spotify_rs::{client::Client, AuthCodeClient, AuthCodeFlow, RedirectUrl};
+use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tokio::sync::Mutex;
 use tower_http::cors::CorsLayer;
 use tracing::info;
