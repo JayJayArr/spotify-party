@@ -11,6 +11,6 @@ import { SocketioService } from './socketio.service';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  constructor(private socketioservice: SocketioService) { }
+  constructor(private socketioservice: SocketioService) {}
   title = 'spotoxide-ui';
 }

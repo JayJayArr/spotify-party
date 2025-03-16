@@ -13,6 +13,9 @@ pub async fn redirect_handler(
     State(db): State<Arc<Mutex<Db>>>,
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
+    if let None = db.lock().await.client {
+        return StatusCode::UNAUTHORIZED;
+    }
     let state = match params.get("state") {
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
@@ -21,7 +24,6 @@ pub async fn redirect_handler(
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
     };
-    // println!("{:?}", params);
     println!("{:?}", state);
     println!("{:?}", code);
     let client_unauth = &mut db.lock().await.client_unauth;

@@ -62,10 +62,7 @@ fn on_connect(socket: SocketRef) {
 
     socket.on(
         "request-username",
-        |socket: SocketRef,
-         Data::<Value>(_data),
-         State(rng): State<RNG>,
-         State(mut users): State<Usernames>| {
+        |socket: SocketRef, State(rng): State<RNG>, State(mut users): State<Usernames>| {
             let name = rng.generate_name();
             users.0.insert(
                 socket.id,
@@ -114,12 +111,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
     info!(?client_secret, "Spotify Client Secret");
     store.insert("client_secret", client_secret.clone());
-    // let username = std::env::var("SPOTIFY_USERNAME").expect("SPOTIFY_USERNAME must be specified");
-    // info!(?username, "Spotify username");
-    // store.insert("client_username", username);
-    // let password = std::env::var("SPOTIFY_PASSWORD").expect("SPOTIFY_PASSWORD must be specified");
-    // info!(?password, "Spotify username");
-    // store.insert("client_password", password);
 
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
@@ -139,13 +130,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
 
     let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
-    // let clientarc: Arc<
-    //     spotify_rs::client::Client<
-    //         spotify_rs::auth::UnAuthenticated,
-    //         AuthCodeFlow,
-    //         spotify_rs::auth::CsrfVerifier,
-    //     >,
-    // > = Arc::new(client);
     let db = Db {
         users: usernames.clone(),
         votes: votes.clone(),
@@ -154,12 +138,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client: None,
     };
     let redirecturlstring = url.to_string();
-
-    // Finally, exchange the auth code for an access token
-    // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
-    //
-    // let user_playlists = spotify.current_user_playlists().limit(5).get().await?;
-    // info!(?user_playlists, "playlists");
 
     let (iolayer, io) = SocketIoBuilder::new()
         .with_state(rng)
