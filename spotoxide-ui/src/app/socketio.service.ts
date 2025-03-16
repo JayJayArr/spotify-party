@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { EventEmitter, Injectable, OnInit, Output } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
 
 @Injectable({
@@ -6,6 +6,7 @@ import { Socket, io } from 'socket.io-client';
 })
 export class SocketioService implements OnInit {
   protected socket: Socket = io('ws://localhost:3000');
+  @Output() username = new EventEmitter<string>();
 
   constructor() {
     console.log('SocketService started');
@@ -18,6 +19,7 @@ export class SocketioService implements OnInit {
     this.socket.connect();
     this.socket.on('username', (data) => {
       console.log('Username: ', data);
+      this.username.emit(data);
     });
 
     this.socket.on('votes', (data) => {
