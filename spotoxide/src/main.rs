@@ -25,8 +25,10 @@ mod song_queue;
 mod user;
 mod votes;
 
-fn on_connect(socket: SocketRef) {
+fn on_connect(socket: SocketRef, State(queue): State<SongQueue>) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
+    let songs = &queue.get();
+    let _ = socket.emit("songs", songs);
 
     socket.on(
         "songs",
