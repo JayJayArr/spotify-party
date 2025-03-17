@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use rmpv::Value;
 use rnglib::RNG;
 use serde_json::json;
@@ -5,20 +7,26 @@ use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State, TryData},
 };
+use tokio::sync::Mutex;
 use tracing::info;
 
 use crate::{
+    Db,
     song::Song,
     song_queue::SongQueue,
     user::{User, Usernames},
     votes::Votes,
 };
 
-pub fn on_connect(socket: SocketRef, State(queue): State<SongQueue>, Data(data): Data<Value>) {
+pub async fn on_connect(
+    socket: SocketRef,
+    State(db): State<Arc<Mutex<Db>>>,
+    Data(data): Data<Value>,
+) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
     info!(?data, "Socket auth");
-    let songs = &queue.get();
-    let _ = socket.emit("songs", songs);
+    let songs = db.lock().await.queue.get();
+    let _ = socket.emit("songs", &songs);
 
     socket.on(
         "songs",
