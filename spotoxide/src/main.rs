@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
-use axum::routing::get;
+use auth::signin_handler;
+use axum::routing::{get, post};
 use dotenv::dotenv;
 use handler::*;
 use rmpv::Value;
@@ -19,14 +20,17 @@ use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::{User, Usernames};
 use votes::Votes;
+
+mod auth;
 mod handler;
 mod song;
 mod song_queue;
 mod user;
 mod votes;
 
-fn on_connect(socket: SocketRef, State(queue): State<SongQueue>) {
+fn on_connect(socket: SocketRef, State(queue): State<SongQueue>, Data(data): Data<Value>) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
+    info!(?data, "Socket auth");
     let songs = &queue.get();
     let _ = socket.emit("songs", songs);
 
@@ -81,10 +85,10 @@ fn on_connect(socket: SocketRef, State(queue): State<SongQueue>) {
         users.0.remove(&socket.id);
     });
 }
-
 pub struct Db {
     users: Usernames,
     votes: Votes,
+    queue: SongQueue,
     rng: RNG,
     client_unauth: spotify_rs::client::Client<
         spotify_rs::auth::UnAuthenticated,
@@ -133,25 +137,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
     let db = Db {
-        users: usernames.clone(),
-        votes: votes.clone(),
-        rng: rng.clone(),
+        users: usernames,
+        votes: votes,
+        rng: rng,
+        queue: queue,
         client_unauth: client,
         client: None,
     };
     let redirecturlstring = url.to_string();
 
     let (iolayer, io) = SocketIoBuilder::new()
-        .with_state(rng)
-        .with_state(usernames)
-        .with_state(queue)
-        .with_state(votes)
+        .with_state(Arc::new(Mutex::new(db)))
         .build_layer();
 
     io.ns("/", on_connect);
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello, World!" }))
+        .route("/signin", post(signin_handler))
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
         .with_state(Arc::new(Mutex::new(db)))

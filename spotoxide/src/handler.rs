@@ -13,7 +13,7 @@ pub async fn redirect_handler(
     State(db): State<Arc<Mutex<Db>>>,
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
-    if let None = db.lock().await.client {
+    if db.lock().await.client.is_none() {
         return StatusCode::UNAUTHORIZED;
     }
     let state = match params.get("state") {
@@ -27,14 +27,14 @@ pub async fn redirect_handler(
     println!("{:?}", state);
     println!("{:?}", code);
     let client_unauth = &mut db.lock().await.client_unauth;
-    let mut client = &mut db.lock().await.client;
+    let client = &mut db.lock().await.client;
     client_unauth.auto_refresh = true;
     let spotify = client_unauth
         .clone()
         .authenticate(code, state)
         .await
         .unwrap();
-    client = &mut Some(spotify);
+    *client = Some(spotify);
 
     // let user_playlists = spotify
     //     .current_user_playlists()

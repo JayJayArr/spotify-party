@@ -7,13 +7,14 @@ import { Socket, io } from 'socket.io-client';
 export class SocketioService implements OnInit {
   protected socket: Socket = io('ws://localhost:3000');
   @Output() username = new EventEmitter<string>();
+  @Output() songs = new EventEmitter();
 
   constructor() {
     console.log('SocketService started');
     this.init();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   init() {
     this.socket.connect();
