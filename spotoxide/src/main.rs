@@ -4,87 +4,26 @@ use auth::signin_handler;
 use axum::routing::{get, post};
 use dotenv::dotenv;
 use handler::*;
-use rmpv::Value;
+use iohandler::on_connect;
 use rnglib::{Language, RNG};
-use serde_json::json;
-use socketioxide::{
-    SocketIo, SocketIoBuilder,
-    extract::{Data, SocketRef, State, TryData},
-};
-use song::Song;
+use socketioxide::SocketIoBuilder;
 use song_queue::SongQueue;
 use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tokio::sync::Mutex;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
-use user::{User, Usernames};
+use user::Usernames;
 use votes::Votes;
 
 mod auth;
 mod handler;
+mod iohandler;
 mod song;
 mod song_queue;
 mod user;
 mod votes;
 
-fn on_connect(socket: SocketRef, State(queue): State<SongQueue>, Data(data): Data<Value>) {
-    info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
-    info!(?data, "Socket auth");
-    let songs = &queue.get();
-    let _ = socket.emit("songs", songs);
-
-    socket.on(
-        "songs",
-        |socket: SocketRef, State(queue): State<SongQueue>| {
-            let songs = &queue.get();
-            info!("get songs {:?}", songs);
-            let _ = socket.emit("songs", songs);
-        },
-    );
-
-    socket.on(
-        "request-song",
-        |socket: SocketRef,
-         State(mut votes): State<Votes>,
-         io: SocketIo,
-         State(users): State<Usernames>,
-         TryData::<Song>(song)| {
-            let _ = match song {
-                Ok(ref _song) => socket.emit("message", "got message for song request"),
-                Err(ref _err) => {
-                    let _ = socket.emit("error", "Song is missing or faulty");
-                    //return if the sent Song struct is faulty
-                    return;
-                }
-            };
-            let username = users.0.get(&socket.id).unwrap();
-            //at this point we can be sure that a song was actually sent
-            votes.push(song.unwrap().uri, username.clone());
-            //broadcast the updated votes to all clients
-            let _ = io.emit("votes", &json!(votes));
-        },
-    );
-
-    socket.on(
-        "request-username",
-        |socket: SocketRef, State(rng): State<RNG>, State(mut users): State<Usernames>| {
-            let name = rng.generate_name();
-            users.0.insert(
-                socket.id,
-                User {
-                    username: name.clone(),
-                },
-            );
-            info!(?name, "Username assigned");
-            socket.emit("username", &name).ok();
-        },
-    );
-    socket.on_disconnect(|socket: SocketRef, State(mut users): State<Usernames>| {
-        //remove the disconnected socket from the users Vec
-        users.0.remove(&socket.id);
-    });
-}
 pub struct Db {
     users: Usernames,
     votes: Votes,
@@ -118,6 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!(?client_secret, "Spotify Client Secret");
     store.insert("client_secret", client_secret.clone());
 
+    //setup components
     let rng = RNG::from(&Language::Fantasy);
     let queue = SongQueue::new();
     let usernames = Usernames::new();
@@ -134,20 +74,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "user-modify-playback-state",
     ];
     let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
-
     let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    let redirecturlstring = url.to_string();
+
     let db = Db {
         users: usernames,
-        votes: votes,
-        rng: rng,
-        queue: queue,
+        votes,
+        rng,
+        queue,
         client_unauth: client,
         client: None,
     };
-    let redirecturlstring = url.to_string();
+    //wrap in an Arc, Mutex
+    let dbarc = Arc::new(Mutex::new(db));
 
+    //create io layer
     let (iolayer, io) = SocketIoBuilder::new()
-        .with_state(Arc::new(Mutex::new(db)))
+        .with_state(dbarc.clone())
         .build_layer();
 
     io.ns("/", on_connect);
@@ -157,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/signin", post(signin_handler))
         .route("/login", get(|| async { redirecturlstring }))
         .route("/redirect", get(redirect_handler))
-        .with_state(Arc::new(Mutex::new(db)))
+        .with_state(dbarc.clone())
         .layer(iolayer)
         .layer(CorsLayer::permissive());
 
