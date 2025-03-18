@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use rmpv::Value;
-use rnglib::RNG;
 use serde_json::json;
 use socketioxide::{
     SocketIo,
@@ -10,13 +9,7 @@ use socketioxide::{
 use tokio::sync::Mutex;
 use tracing::info;
 
-use crate::{
-    Db,
-    song::Song,
-    song_queue::SongQueue,
-    user::{User, Usernames},
-    votes::Votes,
-};
+use crate::{Db, song::Song, user::User};
 
 pub async fn on_connect(
     socket: SocketRef,
@@ -24,13 +17,17 @@ pub async fn on_connect(
     Data(data): Data<Value>,
 ) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
+    let info = data.as_map();
     info!(?data, "Socket auth");
+    info!(?info, "auth info");
+    // check if the user has a
     let songs = db.lock().await.queue.get();
     let _ = socket.emit("songs", &songs);
 
     socket.on(
         "songs",
-        |socket: SocketRef, State(queue): State<SongQueue>| {
+        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
+            let queue = &db.lock().await.queue;
             let songs = &queue.get();
             info!("get songs {:?}", songs);
             let _ = socket.emit("songs", songs);
@@ -39,11 +36,10 @@ pub async fn on_connect(
 
     socket.on(
         "request-song",
-        |socket: SocketRef,
-         State(mut votes): State<Votes>,
-         io: SocketIo,
-         State(users): State<Usernames>,
-         TryData::<Song>(song)| {
+        async |socket: SocketRef,
+               State(db): State<Arc<Mutex<Db>>>,
+               io: SocketIo,
+               TryData::<Song>(song)| {
             let _ = match song {
                 Ok(ref _song) => socket.emit("message", "got message for song request"),
                 Err(ref _err) => {
@@ -52,8 +48,10 @@ pub async fn on_connect(
                     return;
                 }
             };
+            let users = &mut db.lock().await.users;
             let username = users.0.get(&socket.id).unwrap();
             //at this point we can be sure that a song was actually sent
+            let votes = &mut db.lock().await.votes;
             votes.push(song.unwrap().uri, username.clone());
             //broadcast the updated votes to all clients
             let _ = io.emit("votes", &json!(votes));
@@ -62,8 +60,9 @@ pub async fn on_connect(
 
     socket.on(
         "request-username",
-        |socket: SocketRef, State(rng): State<RNG>, State(mut users): State<Usernames>| {
-            let name = rng.generate_name();
+        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
+            let name = db.lock().await.rng.generate_name();
+            let users = &mut db.lock().await.users;
             users.0.insert(
                 socket.id,
                 User {
@@ -74,8 +73,11 @@ pub async fn on_connect(
             socket.emit("username", &name).ok();
         },
     );
-    socket.on_disconnect(|socket: SocketRef, State(mut users): State<Usernames>| {
-        //remove the disconnected socket from the users Vec
-        users.0.remove(&socket.id);
-    });
+    socket.on_disconnect(
+        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
+            //remove the disconnected socket from the users Vec
+
+            db.lock().await.users.0.remove(&socket.id);
+        },
+    );
 }

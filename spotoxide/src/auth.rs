@@ -1,7 +1,13 @@
-use axum::http::StatusCode;
+use std::sync::Arc;
+
+use axum::{Json, extract::State, http::StatusCode};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
+use tracing::info;
+
+use crate::Db;
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
@@ -41,4 +47,9 @@ pub fn decode_jwt(jwt: String) -> Result<TokenData<Claims>, StatusCode> {
     result
 }
 
-pub async fn signin_handler() {}
+pub async fn signin_handler(State(db): State<Arc<Mutex<Db>>>) -> Result<Json<String>, StatusCode> {
+    let name = db.lock().await.rng.generate_name();
+    info!(?name, "Username assigned");
+    let token = encode_jwt(name).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(token))
+}
