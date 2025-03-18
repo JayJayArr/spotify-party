@@ -1,6 +1,12 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{
+    Json,
+    body::Body,
+    extract::{Request, State},
+    http::{self, Response, StatusCode},
+    middleware::Next,
+};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
@@ -16,8 +22,13 @@ pub struct Claims {
     pub name: String,
 }
 
+pub struct AuthError {
+    message: String,
+    status_code: StatusCode,
+}
+
 pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
-    let jwt_token: String = "randomstring".to_string();
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be specified");
 
     let now = Utc::now();
     let expire: chrono::TimeDelta = Duration::hours(24);
@@ -25,7 +36,6 @@ pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
     let iat: usize = now.timestamp() as usize;
 
     let claim = Claims { iat, exp, name };
-    let secret = jwt_token.clone();
 
     encode(
         &Header::default(),
@@ -36,7 +46,7 @@ pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
 }
 
 pub fn decode_jwt(jwt: String) -> Result<TokenData<Claims>, StatusCode> {
-    let secret = "randomstring".to_string();
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be specified");
 
     let result: Result<TokenData<Claims>, StatusCode> = decode(
         &jwt,
@@ -53,3 +63,50 @@ pub async fn signin_handler(State(db): State<Arc<Mutex<Db>>>) -> Result<Json<Str
     let token = encode_jwt(name).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Json(token))
 }
+
+pub async fn authorize(mut req: Request, next: Next) -> Result<Response<Body>, AuthError> {
+    let auth_header = req.headers_mut().get(http::header::AUTHORIZATION);
+
+    let auth_header = match auth_header {
+        Some(header) => header.to_str().map_err(|_| AuthError {
+            message: "Empty header is not allowed".to_string(),
+            status_code: StatusCode::FORBIDDEN,
+        })?,
+        None => {
+            return Err(AuthError {
+                message: "Please add the JWT token to the header".to_string(),
+                status_code: StatusCode::FORBIDDEN,
+            });
+        }
+    };
+
+    let mut header = auth_header.split_whitespace();
+
+    let (bearer, token) = (header.next(), header.next());
+
+    let token_data = match decode_jwt(token.unwrap().to_string()) {
+        Ok(data) => data,
+        Err(_) => {
+            return Err(AuthError {
+                message: "Unable to decode token".to_string(),
+                status_code: StatusCode::UNAUTHORIZED,
+            });
+        }
+    };
+
+    // Fetch the user details from the database
+    // let current_user = match retrieve_user(&token_data.claims.email) {
+    //     Some(user) => user,
+    //     None => {
+    //         return Err(AuthError {
+    //             message: "You are not an authorized user".to_string(),
+    //             status_code: StatusCode::UNAUTHORIZED,
+    //         });
+    //     }
+    // };
+    //
+    // req.extensions_mut().insert(current_user);
+    Ok(next.run(req).await)
+}
+
+// pub fn retrieve_user() -> Option<User> {}
