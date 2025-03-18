@@ -19,7 +19,6 @@ pub async fn on_connect(
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
     let info = data.as_map();
     info!(?data, "Socket auth");
-    info!(?info, "auth info");
     // check if the user has a
     let songs = db.lock().await.queue.get();
     let _ = socket.emit("songs", &songs);
