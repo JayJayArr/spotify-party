@@ -6,6 +6,7 @@ use axum::{
 };
 use reqwest::StatusCode;
 use tokio::sync::Mutex;
+use tracing::info;
 
 use crate::Db;
 
@@ -13,9 +14,10 @@ pub async fn redirect_handler(
     State(db): State<Arc<Mutex<Db>>>,
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
-    if db.lock().await.client.is_none() {
-        return StatusCode::UNAUTHORIZED;
-    }
+    info!("Starting client auch");
+    // if db.lock().await.client.is_none() {
+    //     return StatusCode::UNAUTHORIZED;
+    // }
     let state = match params.get("state") {
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
@@ -26,15 +28,18 @@ pub async fn redirect_handler(
     };
     println!("{:?}", state);
     println!("{:?}", code);
-    let client_unauth = &mut db.lock().await.client_unauth;
-    let client = &mut db.lock().await.client;
-    client_unauth.auto_refresh = true;
-    let spotify = client_unauth
+    let mut db = &mut db.lock().await;
+
+    info!("Clients all acquired");
+    let spotify = db
+        .client_unauth
         .clone()
         .authenticate(code, state)
         .await
         .unwrap();
-    *client = Some(spotify);
+
+    db.client = Some(spotify.clone());
+    info!(?spotify, "Client was connected");
 
     // let user_playlists = spotify
     //     .current_user_playlists()

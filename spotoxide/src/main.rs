@@ -74,7 +74,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "user-modify-playback-state",
     ];
     let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
-    let (client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    let (mut client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    client.auto_refresh = true;
     let redirecturlstring = url.to_string();
 
     let db = Db {
