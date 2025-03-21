@@ -4,9 +4,9 @@ use auth::signin_handler;
 use axum::routing::{get, post};
 use dotenv::dotenv;
 use handler::*;
-use iohandler::on_connect;
+use iohandler::{auth_middleware, on_connect};
 use rnglib::{Language, RNG};
-use socketioxide::SocketIoBuilder;
+use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
 use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tokio::sync::Mutex;
@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_state(dbarc.clone())
         .build_layer();
 
-    io.ns("/", on_connect);
+    io.ns("/", on_connect.with(auth_middleware));
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello, World!" }))

@@ -14,10 +14,9 @@ use crate::{Db, song::Song, user::User};
 pub async fn on_connect(
     socket: SocketRef,
     State(db): State<Arc<Mutex<Db>>>,
-    Data(data): Data<Value>,
+    // Data(data): Data<Value>,
 ) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
-    info!(?data, "Socket auth");
     // check if the user has a
     let songs = db.lock().await.queue.get();
     if songs.len() != 0 {
@@ -91,4 +90,26 @@ pub async fn on_connect(
             db.lock().await.users.0.remove(&socket.id);
         },
     );
+}
+
+#[derive(Debug)]
+pub struct AuthError;
+impl std::fmt::Display for AuthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "AuthError")
+    }
+}
+
+pub fn auth_middleware(s: SocketRef, Data(data): Data<Value>) -> Result<(), AuthError> {
+    println!("auth middleware called");
+    info!(?data, "Socket auth");
+    let binding = data.as_map().unwrap().get(0).unwrap().1.clone();
+    let token = binding.as_str().unwrap().split(" ");
+    info!(?token, "Token");
+    // if token != "secret" {
+    //     Err(AuthError)
+    // } else {
+    //     Ok(())
+    // }
+    Ok(())
 }

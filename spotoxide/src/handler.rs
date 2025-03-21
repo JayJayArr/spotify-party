@@ -28,7 +28,7 @@ pub async fn redirect_handler(
     };
     println!("{:?}", state);
     println!("{:?}", code);
-    let mut db = &mut db.lock().await;
+    let db = &mut db.lock().await;
 
     info!("Clients all acquired");
     let spotify = db
