@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use reqwest::StatusCode;
 use rmpv::Value;
 use serde_json::json;
 use socketioxide::{
@@ -9,7 +10,12 @@ use socketioxide::{
 use tokio::sync::Mutex;
 use tracing::info;
 
-use crate::{Db, song::Song, user::User};
+use crate::{
+    Db,
+    auth::{AuthError, decode_jwt},
+    song::Song,
+    user::User,
+};
 
 pub async fn on_connect(
     socket: SocketRef,
@@ -17,7 +23,6 @@ pub async fn on_connect(
     // Data(data): Data<Value>,
 ) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
-    // check if the user has a
     let songs = db.lock().await.queue.get();
     if songs.len() != 0 {
         let _ = socket.emit("songs", &songs);
@@ -92,20 +97,41 @@ pub async fn on_connect(
     );
 }
 
-#[derive(Debug)]
-pub struct AuthError;
-impl std::fmt::Display for AuthError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "AuthError")
-    }
-}
-
 pub fn auth_middleware(s: SocketRef, Data(data): Data<Value>) -> Result<(), AuthError> {
-    println!("auth middleware called");
-    info!(?data, "Socket auth");
-    let binding = data.as_map().unwrap().get(0).unwrap().1.clone();
-    let token = binding.as_str().unwrap().split(" ");
-    info!(?token, "Token");
+    // info!(?data, "Socket auth");
+    let binding = match data.as_map() {
+        Some(map) => match map.get(0) {
+            Some(data) => data.1.clone(),
+            None => {
+                return Err(AuthError {
+                    message: "Empty Token not allowed".to_string(),
+                    status_code: StatusCode::UNAUTHORIZED,
+                });
+            }
+        },
+        None => {
+            return Err(AuthError {
+                message: "No Token provided".to_string(),
+                status_code: StatusCode::UNAUTHORIZED,
+            });
+        }
+    };
+    let mut header = binding.as_str().unwrap().split_whitespace();
+
+    let (bearer, token) = (header.next(), header.next());
+    // info!(?token, "Token");
+    match decode_jwt(token.unwrap().to_string()) {
+        Ok(claims) => {
+            info!(?claims, "Claims");
+            //TODO: insert the username into the active users
+        }
+        Err(err) => {
+            return Err(AuthError {
+                message: "Error decoding token".to_string(),
+                status_code: StatusCode::UNAUTHORIZED,
+            });
+        }
+    }
     // if token != "secret" {
     //     Err(AuthError)
     // } else {

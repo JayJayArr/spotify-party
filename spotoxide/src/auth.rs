@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    fmt::{Debug, Display},
+    sync::Arc,
+};
 
 use axum::{
     Json,
@@ -15,16 +18,21 @@ use tracing::info;
 
 use crate::Db;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Claims {
     pub exp: usize,
     pub iat: usize,
     pub name: String,
 }
-
+#[derive(Debug)]
 pub struct AuthError {
-    message: String,
-    status_code: StatusCode,
+    pub message: String,
+    pub status_code: StatusCode,
+}
+impl Display for AuthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "AuthError")
+    }
 }
 
 pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
