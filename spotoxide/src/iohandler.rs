@@ -24,7 +24,7 @@ pub async fn on_connect(
 ) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");
     let songs = db.lock().await.queue.get();
-    if songs.len() != 0 {
+    if !songs.is_empty() {
         let _ = socket.emit("songs", &songs);
     } else {
         match &db.lock().await.client {
@@ -73,21 +73,6 @@ pub async fn on_connect(
         },
     );
 
-    socket.on(
-        "request-username",
-        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
-            let name = db.lock().await.rng.generate_name();
-            let users = &mut db.lock().await.users;
-            users.0.insert(
-                socket.id,
-                User {
-                    username: name.clone(),
-                },
-            );
-            info!(?name, "Username assigned");
-            socket.emit("username", &name).ok();
-        },
-    );
     socket.on_disconnect(
         async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
             //remove the disconnected socket from the users Vec
@@ -97,10 +82,14 @@ pub async fn on_connect(
     );
 }
 
-pub fn auth_middleware(s: SocketRef, Data(data): Data<Value>) -> Result<(), AuthError> {
+pub async fn auth_middleware(
+    socket: SocketRef,
+    Data(data): Data<Value>,
+    State(db): State<Arc<Mutex<Db>>>,
+) -> Result<(), AuthError> {
     // info!(?data, "Socket auth");
     let binding = match data.as_map() {
-        Some(map) => match map.get(0) {
+        Some(map) => match map.first() {
             Some(data) => data.1.clone(),
             None => {
                 return Err(AuthError {
@@ -118,14 +107,19 @@ pub fn auth_middleware(s: SocketRef, Data(data): Data<Value>) -> Result<(), Auth
     };
     let mut header = binding.as_str().unwrap().split_whitespace();
 
-    let (bearer, token) = (header.next(), header.next());
+    let (_bearer, token) = (header.next(), header.next());
     // info!(?token, "Token");
     match decode_jwt(token.unwrap().to_string()) {
-        Ok(claims) => {
-            info!(?claims, "Claims");
-            //TODO: insert the username into the active users
+        Ok(tokendata) => {
+            let users = &mut db.lock().await.users;
+            users.0.insert(
+                socket.id,
+                User {
+                    username: tokendata.claims.name,
+                },
+            );
         }
-        Err(err) => {
+        Err(_err) => {
             return Err(AuthError {
                 message: "Error decoding token".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,
