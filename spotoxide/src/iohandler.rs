@@ -76,8 +76,9 @@ pub async fn on_connect(
     socket.on_disconnect(
         async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
             //remove the disconnected socket from the users Vec
-
-            db.lock().await.users.0.remove(&socket.id);
+            let users = &mut db.lock().await.users.0;
+            users.remove(&socket.id);
+            info!(map = ?users);
         },
     );
 }
@@ -89,9 +90,13 @@ pub async fn auth_middleware(
 ) -> Result<(), AuthError> {
     // info!(?data, "Socket auth");
     let binding = match data.as_map() {
-        Some(map) => match map.first() {
-            Some(data) => data.1.clone(),
+        Some(map) => match map.get(0) {
+            Some(data) => {
+                info!(?map, "Good socket map");
+                data.1.clone()
+            }
             None => {
+                info!(?map, "Socket rejected1");
                 return Err(AuthError {
                     message: "Empty Token not allowed".to_string(),
                     status_code: StatusCode::UNAUTHORIZED,
@@ -99,6 +104,7 @@ pub async fn auth_middleware(
             }
         },
         None => {
+            info!(?data, "Socket rejected2");
             return Err(AuthError {
                 message: "No Token provided".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,
@@ -111,15 +117,17 @@ pub async fn auth_middleware(
     // info!(?token, "Token");
     match decode_jwt(token.unwrap().to_string()) {
         Ok(tokendata) => {
-            let users = &mut db.lock().await.users;
-            users.0.insert(
+            let users = &mut db.lock().await.users.0;
+            users.insert(
                 socket.id,
                 User {
                     username: tokendata.claims.name,
                 },
             );
+            info!(map = ?users);
         }
         Err(_err) => {
+            info!(?data, "Socket rejected3");
             return Err(AuthError {
                 message: "Error decoding token".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,

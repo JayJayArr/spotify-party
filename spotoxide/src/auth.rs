@@ -18,6 +18,7 @@ pub struct Claims {
     pub iat: usize,
     pub name: String,
 }
+#[derive(Debug)]
 pub struct AuthError {
     pub message: String,
     pub status_code: StatusCode,
@@ -27,6 +28,7 @@ impl Display for AuthError {
         write!(f, "AuthError")
     }
 }
+impl std::error::Error for AuthError {}
 
 pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be specified");

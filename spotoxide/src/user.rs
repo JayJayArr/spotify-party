@@ -13,7 +13,7 @@ impl fmt::Display for User {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Usernames(pub HashMap<Sid, User>);
 
 impl Usernames {

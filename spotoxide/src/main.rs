@@ -103,7 +103,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/redirect", get(redirect_handler))
         .with_state(dbarc.clone())
         .layer(iolayer)
-        // .layer(ConnectMiddleware)
         .layer(CorsLayer::permissive());
 
     info!("Starting server");
