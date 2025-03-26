@@ -26,10 +26,10 @@ pub async fn redirect_handler(
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
     };
-    println!("{:?}", state);
-    println!("{:?}", code);
     let db = &mut db.lock().await;
-
+    if let None = db.client {
+        return StatusCode::SERVICE_UNAVAILABLE;
+    }
     info!("Clients all acquired");
     let spotify = db
         .client_unauth

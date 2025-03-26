@@ -90,7 +90,7 @@ pub async fn auth_middleware(
 ) -> Result<(), AuthError> {
     // info!(?data, "Socket auth");
     let binding = match data.as_map() {
-        Some(map) => match map.get(0) {
+        Some(map) => match map.first() {
             Some(data) => {
                 info!(?map, "Good socket map");
                 data.1.clone()

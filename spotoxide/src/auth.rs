@@ -8,7 +8,6 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
-use tracing::info;
 
 use crate::Db;
 

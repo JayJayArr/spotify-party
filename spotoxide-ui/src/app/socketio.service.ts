@@ -41,6 +41,7 @@ export class SocketioService implements OnDestroy {
         this.socket.on('connect_error', (err) => {
           console.log(err);
         });
+        this.socket.connect();
       },
     });
   }
