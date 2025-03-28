@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use spotify_rs::model::{PlayableItem, player::Queue};
 
 use crate::song::Song;
 #[derive(Default, Clone, Serialize, Debug)]
@@ -40,5 +41,30 @@ impl SongQueue {
 
     pub fn get(&self) -> VecDeque<Song> {
         self.songs.clone()
+    }
+}
+
+impl From<Queue> for SongQueue {
+    fn from(value: Queue) -> Self {
+        let mut queue = SongQueue::new();
+        if let Some(song) = value.currently_playing {
+            match song {
+                PlayableItem::Track(track) => {
+                    queue.push(track.into());
+                }
+                PlayableItem::Episode(_) => {}
+            }
+        };
+        for song in value.queue {
+            match song {
+                PlayableItem::Track(track) => {
+                    queue.push(track.into());
+                }
+                PlayableItem::Episode(_) => {}
+            }
+        }
+        println!("{:?}", queue);
+
+        queue
     }
 }

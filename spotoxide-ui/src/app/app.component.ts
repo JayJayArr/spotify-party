@@ -12,7 +12,7 @@ import { Song } from '../types';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  constructor(private socketioservice: SocketioService) { }
+  constructor(private socketioservice: SocketioService) {}
   title = 'spotoxide-ui';
   username: String = '';
   songs: Song[] = [];
@@ -22,15 +22,6 @@ export class AppComponent implements OnInit {
       next: (name: String) => {
         if (name) {
           this.username = name;
-        }
-      },
-    });
-
-    this.socketioservice.songs.subscribe({
-      next: (songs: Song[]) => {
-        if (songs) {
-          console.log(songs);
-          this.songs = songs;
         }
       },
     });

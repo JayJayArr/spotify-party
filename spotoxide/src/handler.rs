@@ -14,7 +14,7 @@ pub async fn redirect_handler(
     State(db): State<Arc<Mutex<Db>>>,
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
-    info!("Starting client auch");
+    info!("Starting client auth");
     // if db.lock().await.client.is_none() {
     //     return StatusCode::UNAUTHORIZED;
     // }
@@ -27,11 +27,11 @@ pub async fn redirect_handler(
         None => return StatusCode::BAD_REQUEST,
     };
     let db = &mut db.lock().await;
-    if let None = db.client {
+    if db.client.is_some() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
     info!("Clients all acquired");
-    let spotify = db
+    let mut spotify = db
         .client_unauth
         .clone()
         .authenticate(code, state)
@@ -48,8 +48,9 @@ pub async fn redirect_handler(
     //     .await
     //     .unwrap();
     // info!(?user_playlists, "playlists");
-    // let currently_playing = spotify.get_user_queue().await.unwrap();
+    let currently_playing = spotify.get_user_queue().await.unwrap();
     // info!(?currently_playing, "currently_playing");
+    db.queue = currently_playing.into();
 
     StatusCode::OK
     // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
