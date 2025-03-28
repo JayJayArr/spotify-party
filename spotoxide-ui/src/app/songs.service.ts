@@ -7,12 +7,11 @@ import { Song } from '../types';
 })
 export class SongsService implements OnInit {
   songs: Song[] = [];
-  constructor(private socketioservice: SocketioService) {}
+  constructor(private socketioservice: SocketioService) { }
   ngOnInit(): void {
     this.socketioservice.songs.subscribe({
       next: (songs: Song[]) => {
         if (songs) {
-          console.log(songs);
           this.songs = songs;
         }
       },
