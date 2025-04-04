@@ -23,26 +23,47 @@ export class SocketioService implements OnDestroy {
   }
 
   async init() {
-    this.http.post('http://localhost:3000/signin', {}).subscribe({
-      next: async (token) => {
-        this.token = token.toString();
-        let tokendata = await JSON.parse(atob(token.toString()?.split('.')[1]));
-        this.socket.auth = { token: `bearer ${token}` };
-        this.username.emit(tokendata?.name);
+    await this.getToken();
+    this.socket.on('votes', (data) => {
+      console.log('Votes: ', data);
+    });
 
-        this.socket.on('votes', (data) => {
-          console.log('Votes: ', data);
-        });
-
-        this.socket.on('songs', (data) => {
-          this.songs.emit(data);
-          console.log('Songs: ', data);
-        });
-        this.socket.on('connect_error', (err) => {
-          console.log(err);
-        });
-        this.socket.connect();
-      },
+    this.socket.on('songs', (data) => {
+      this.songs.emit(data);
+      console.log('Songs: ', data);
+    });
+    this.socket.on('connect_error', (err) => {
+      console.log(err);
     });
   }
+
+  async getToken() {
+    if (localStorage.getItem('token') != null) {
+      let localstoragedata = localStorage.getItem('token');
+      if (localstoragedata) {
+        this.token = localstoragedata;
+        let tokendata = await JSON.parse(
+          atob(this.token.toString()?.split('.')[1]),
+        );
+        this.socket.auth = { token: `bearer ${this.token}` };
+        this.username.emit(tokendata?.name);
+        this.socket.connect();
+      }
+    } else {
+      this.http.post('http://localhost:3000/signin', {}).subscribe({
+        next: async (token) => {
+          this.token = token.toString();
+          localStorage.setItem('token', token.toString());
+          let tokendata = await JSON.parse(
+            atob(token.toString()?.split('.')[1]),
+          );
+          this.socket.auth = { token: `bearer ${token}` };
+          this.username.emit(tokendata?.name);
+          this.socket.connect();
+        },
+      });
+    }
+  }
+
+  login() { }
 }

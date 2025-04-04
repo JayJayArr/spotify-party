@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PlaylistComponent } from '../playlist/playlist.component';
 import { Song } from '../../types';
-import { SocketioService } from '../socketio.service';
+import { SongsService } from '../songs.service';
 
 @Component({
   selector: 'app-currentplay',
@@ -10,15 +10,17 @@ import { SocketioService } from '../socketio.service';
   styleUrl: './currentplay.component.scss',
 })
 export class CurrentplayComponent implements OnInit {
-  constructor(private socketioservice: SocketioService) { }
   songs: Song[] = [];
-  ngOnInit(): void {
-    this.socketioservice.songs.subscribe({
+  constructor(private songsservice: SongsService) {
+    this.songsservice.songs.subscribe({
       next: (songs: Song[]) => {
         if (songs) {
           this.songs = songs;
         }
       },
     });
+  }
+  ngOnInit(): void {
+    this.songs = this.songsservice.getSongs();
   }
 }
