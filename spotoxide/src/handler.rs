@@ -15,9 +15,6 @@ pub async fn redirect_handler(
     params: Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
     info!("Starting client auth");
-    // if db.lock().await.client.is_none() {
-    //     return StatusCode::UNAUTHORIZED;
-    // }
     let state = match params.get("state") {
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
@@ -30,7 +27,6 @@ pub async fn redirect_handler(
     if db.client.is_some() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
-    info!("Clients all acquired");
     let mut spotify = db
         .client_unauth
         .clone()

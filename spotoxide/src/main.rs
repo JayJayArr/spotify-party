@@ -10,6 +10,7 @@ use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
 use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
 use tokio::sync::Mutex;
+use tokio_cron_scheduler::{Job, JobScheduler};
 use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
@@ -95,6 +96,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_layer();
 
     io.ns("/", on_connect.with(auth_middleware));
+
+    let sched = JobScheduler::new().await?;
+
+    let crondbhandle = dbarc.clone();
+    let croniohandle = io.clone();
+    sched
+        .add(Job::new_async("1/10 * * * * *", move |_uuid, _l| {
+            Box::pin({
+                let dbhandle = crondbhandle.clone();
+                let iohandle = croniohandle.clone();
+                async move {
+                    info!("Cron Job running");
+                    let db = &mut dbhandle.lock().await;
+                    match &db.client {
+                        None => {}
+                        Some(client) => {
+                            let currently_playing = client.clone().get_user_queue().await.unwrap();
+                            // info!(?currently_playing, "currently_playing");
+                            db.queue = currently_playing.into();
+                            let _ = iohandle.emit("songs", &db.queue.get());
+                        }
+                    }
+                }
+            })
+        })?)
+        .await?;
+    sched.shutdown_on_ctrl_c();
+    sched.start().await?;
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello, World!" }))

@@ -34,7 +34,7 @@ pub async fn on_connect(
             }
             None => {
                 let _ = socket.emit("songs", "not playing");
-                info!("Client was detected as not yet connected");
+                info!("Client not yet connected");
             }
         }
     }
@@ -44,7 +44,6 @@ pub async fn on_connect(
         async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
             let queue = &db.lock().await.queue;
             let songs = &queue.get();
-            info!("get songs {:?}", songs);
             let _ = socket.emit("songs", songs);
         },
     );
@@ -78,7 +77,6 @@ pub async fn on_connect(
             //remove the disconnected socket from the users Vec
             let users = &mut db.lock().await.users.0;
             users.remove(&socket.id);
-            info!(map = ?users);
         },
     );
 }
@@ -91,12 +89,9 @@ pub async fn auth_middleware(
     // info!(?data, "Socket auth");
     let binding = match data.as_map() {
         Some(map) => match map.first() {
-            Some(data) => {
-                info!(?map, "Good socket map");
-                data.1.clone()
-            }
+            Some(data) => data.1.clone(),
             None => {
-                info!(?map, "Socket rejected1");
+                info!(?map, "Socket rejected");
                 return Err(AuthError {
                     message: "Empty Token not allowed".to_string(),
                     status_code: StatusCode::UNAUTHORIZED,
@@ -104,7 +99,7 @@ pub async fn auth_middleware(
             }
         },
         None => {
-            info!(?data, "Socket rejected2");
+            info!(?data, "Socket rejected");
             return Err(AuthError {
                 message: "No Token provided".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,
@@ -114,7 +109,6 @@ pub async fn auth_middleware(
     let mut header = binding.as_str().unwrap().split_whitespace();
 
     let (_bearer, token) = (header.next(), header.next());
-    // info!(?token, "Token");
     match decode_jwt(token.unwrap().to_string()) {
         Ok(tokendata) => {
             let users = &mut db.lock().await.users.0;
@@ -124,20 +118,14 @@ pub async fn auth_middleware(
                     username: tokendata.claims.name,
                 },
             );
-            info!(map = ?users);
         }
         Err(_err) => {
-            info!(?data, "Socket rejected3");
+            info!(?data, "Socket rejected");
             return Err(AuthError {
                 message: "Error decoding token".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,
             });
         }
     }
-    // if token != "secret" {
-    //     Err(AuthError)
-    // } else {
-    //     Ok(())
-    // }
     Ok(())
 }
