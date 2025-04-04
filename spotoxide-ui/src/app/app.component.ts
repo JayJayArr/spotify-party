@@ -14,7 +14,7 @@ import { Song } from '../types';
 export class AppComponent implements OnInit {
   constructor(private socketioservice: SocketioService) { }
   title = 'spotoxide-ui';
-  links = ['Current', 'Voting', 'Third'];
+  links = ['Current', 'Voting', 'Search'];
   activeLink = this.links[0];
   username: String = '';
   songs: Song[] = [];
