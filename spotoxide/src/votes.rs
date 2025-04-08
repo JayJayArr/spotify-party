@@ -28,7 +28,7 @@ impl Votes {
         self.0.clone()
     }
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SongSearch {
-    searchstring: String,
+    pub searchstring: String,
 }

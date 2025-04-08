@@ -7,7 +7,7 @@ use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State, TryData},
 };
-use spotify_rs::{client, model::search::Item};
+use spotify_rs::model::search::Item;
 use tokio::sync::Mutex;
 use tracing::info;
 
@@ -47,51 +47,9 @@ pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
         },
     );
 
-    socket.on(
-        "vote",
-        async |socket: SocketRef,
-               State(db): State<Arc<Mutex<Db>>>,
-               io: SocketIo,
-               TryData::<Song>(song)| {
-            match song {
-                Ok(ref _song) => info!("got message for song request"),
-                Err(ref _err) => {
-                    let _ = socket.emit("error", "Song is missing or faulty");
-                    return;
-                }
-            };
-            let users = &mut db.lock().await.users;
-            let username = users.0.get(&socket.id).unwrap();
-            //at this point we can be sure that a song was actually sent
-            let votes = &mut db.lock().await.votes;
-            votes.vote(song.unwrap().uri, username.clone());
-            //broadcast the updated votes to all clients
-            let _ = io.emit("votes", &json!(votes));
-        },
-    );
+    socket.on("vote", onvote);
 
-    socket.on(
-        "search",
-        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>, Data::<SongSearch>(search)| {
-            let db = db.lock().await;
-            match db.client {
-                None => {
-                    let _ = socket.emit("search", "client not ready");
-                }
-                Some(client) => {
-                    let result = client
-                        .search(search.into(), &[Item::Album, Item::Artist, Item::Track])
-                        .get()
-                        .await;
-                    match result {
-                        Ok(resultcontent) => {}
-                        Err(err) => {}
-                    }
-                    let _ = socket.emit("search", &result);
-                }
-            }
-        },
-    );
+    socket.on("search", onsearch);
 
     socket.on_disconnect(
         async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
@@ -100,6 +58,61 @@ pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
             users.remove(&socket.id);
         },
     );
+}
+
+async fn onvote(
+    socket: SocketRef,
+    State(db): State<Arc<Mutex<Db>>>,
+    io: SocketIo,
+    TryData(song): TryData<Song>,
+) -> () {
+    match song {
+        Ok(ref _song) => info!("got message for song request"),
+        Err(ref _err) => {
+            let _ = socket.emit("error", "Song is missing or faulty");
+            return;
+        }
+    };
+    let users = &mut db.lock().await.users;
+    let username = users.0.get(&socket.id).unwrap();
+    //at this point we can be sure that a song was actually sent
+    let votes = &mut db.lock().await.votes;
+    votes.vote(song.unwrap().uri, username.clone());
+    let _ = io.emit("votes", &json!(votes));
+}
+
+async fn onsearch(
+    socket: SocketRef,
+    State(db): State<Arc<Mutex<Db>>>,
+    Data(search): Data<SongSearch>,
+) -> () {
+    let db = db.lock().await;
+    match &db.client {
+        None => {
+            let _ = socket.emit("search", "client not ready");
+        }
+        Some(client) => {
+            let response = client
+                .clone()
+                .search(
+                    search.searchstring,
+                    &[Item::Album, Item::Artist, Item::Track],
+                )
+                .get()
+                .await;
+            match response {
+                Ok(responsecontent) => {
+                    let result = responsecontent.tracks;
+                    //This might need conversion into a Vec<Songs>
+                    let _ = socket.emit("search", &result);
+                }
+                Err(err) => {
+                    let _ = socket.emit("search", &err);
+                }
+            };
+            // let _ = socket.emit("search", &result);
+        }
+    }
 }
 
 pub async fn auth_middleware(
