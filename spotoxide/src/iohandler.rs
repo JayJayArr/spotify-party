@@ -65,7 +65,7 @@ async fn onvote(
     State(db): State<Arc<Mutex<Db>>>,
     io: SocketIo,
     TryData(song): TryData<Song>,
-) -> () {
+) {
     match song {
         Ok(ref _song) => info!("got message for song request"),
         Err(ref _err) => {
@@ -85,7 +85,7 @@ async fn onsearch(
     socket: SocketRef,
     State(db): State<Arc<Mutex<Db>>>,
     Data(search): Data<SongSearch>,
-) -> () {
+) {
     let db = db.lock().await;
     match &db.client {
         None => {
