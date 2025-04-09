@@ -47,7 +47,10 @@ export class SocketioService implements OnDestroy {
         let tokendata = await JSON.parse(
           atob(this.token.toString()?.split('.')[1]),
         );
-        if (tokendata?.exp < new Date().valueOf()) {
+        console.log('Expired: ', tokendata?.exp <= new Date().valueOf() / 1000);
+        console.log('exp: ', tokendata?.exp);
+        console.log('current time: ', new Date().valueOf() / 1000);
+        if (tokendata?.exp <= new Date().valueOf() / 1000) {
           this.refreshToken();
         } else {
           this.socket.auth = { token: `bearer ${this.token}` };
