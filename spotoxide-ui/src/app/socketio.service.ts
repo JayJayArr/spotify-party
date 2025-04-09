@@ -12,6 +12,7 @@ export class SocketioService implements OnDestroy {
   });
   @Output() username = new EventEmitter<string>();
   @Output() songs = new EventEmitter();
+  @Output() votes = new EventEmitter();
 
   constructor(private http: HttpClient) {
     console.log('SocketService started');
@@ -25,6 +26,7 @@ export class SocketioService implements OnDestroy {
   async init() {
     await this.getToken();
     this.socket.on('votes', (data) => {
+      this.songs.emit(data);
       console.log('Votes: ', data);
     });
 
@@ -45,25 +47,29 @@ export class SocketioService implements OnDestroy {
         let tokendata = await JSON.parse(
           atob(this.token.toString()?.split('.')[1]),
         );
-        this.socket.auth = { token: `bearer ${this.token}` };
-        this.username.emit(tokendata?.name);
-        this.socket.connect();
-      }
-    } else {
-      this.http.post('http://localhost:3000/signin', {}).subscribe({
-        next: async (token) => {
-          this.token = token.toString();
-          localStorage.setItem('token', token.toString());
-          let tokendata = await JSON.parse(
-            atob(token.toString()?.split('.')[1]),
-          );
-          this.socket.auth = { token: `bearer ${token}` };
+        if (tokendata?.exp < new Date().valueOf()) {
+          this.refreshToken();
+        } else {
+          this.socket.auth = { token: `bearer ${this.token}` };
           this.username.emit(tokendata?.name);
           this.socket.connect();
-        },
-      });
+        }
+      }
+    } else {
+      this.refreshToken();
     }
   }
 
-  login() { }
+  refreshToken() {
+    this.http.post('http://localhost:3000/signin', {}).subscribe({
+      next: async (token) => {
+        this.token = token.toString();
+        localStorage.setItem('token', token.toString());
+        let tokendata = await JSON.parse(atob(token.toString()?.split('.')[1]));
+        this.socket.auth = { token: `bearer ${token}` };
+        this.username.emit(tokendata?.name);
+        this.socket.connect();
+      },
+    });
+  }
 }
