@@ -8,6 +8,7 @@ import { Song } from '../types';
 export class SongsService {
   songscache: Song[] = [];
   @Output() songs = new EventEmitter();
+
   constructor(private socketioservice: SocketioService) {
     this.socketioservice.songs.subscribe({
       next: (songs: Song[]) => {
@@ -18,6 +19,7 @@ export class SongsService {
       },
     });
   }
+
   getSongs() {
     return this.songscache;
   }

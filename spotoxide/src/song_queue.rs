@@ -63,8 +63,6 @@ impl From<Queue> for SongQueue {
                 PlayableItem::Episode(_) => {}
             }
         }
-        println!("{:?}", queue);
-
         queue
     }
 }

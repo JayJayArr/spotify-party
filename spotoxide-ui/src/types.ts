@@ -4,3 +4,8 @@ export interface Song {
   picture: String;
   uri: String;
 }
+
+export interface Vote {
+  songid: String;
+  users: String[];
+}
