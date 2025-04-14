@@ -6,6 +6,9 @@ export interface Song {
 }
 
 export interface Vote {
-  songid: String;
+  title: String;
+  artists: String[];
+  picture: String;
+  uri: String;
   users: String[];
 }

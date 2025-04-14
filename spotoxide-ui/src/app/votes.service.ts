@@ -20,7 +20,7 @@ export class VotesService {
     });
   }
 
-  getSongs() {
+  getVotes() {
     return this.votescache;
   }
 }
