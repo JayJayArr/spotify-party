@@ -115,7 +115,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             let currently_playing = client.clone().get_user_queue().await.unwrap();
                             // info!(?currently_playing, "currently_playing");
                             db.queue = currently_playing.into();
-                            let _ = iohandle.emit("songs", &db.queue.get());
+                            let _ = iohandle.emit("songs", &db.queue.get()).await;
                         }
                     }
                 }
