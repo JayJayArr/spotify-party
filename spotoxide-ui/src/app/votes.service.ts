@@ -10,7 +10,7 @@ export class VotesService {
   @Output() votes = new EventEmitter();
 
   constructor(private socketioservice: SocketioService) {
-    this.socketioservice.songs.subscribe({
+    this.socketioservice.votes.subscribe({
       next: (votes: Vote[]) => {
         if (votes) {
           this.votescache = votes;

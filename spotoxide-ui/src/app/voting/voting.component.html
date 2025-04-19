@@ -1,18 +1,24 @@
-@for (vote of votes; track vote.uri) {
-  <mat-card class="song-card">
-    <mat-card-content>
-      <img [src]="vote.picture" class="albumimage" />
-      <div class="written">
-        <h3 class="title">
-          {{ vote.title }}
-        </h3>
-        <h5 class="artists">
-          {{ vote.artists.join(", ") }}
-        </h5>
-      </div>
-      <button mat-fab (click)="voteOnClick()">
-        <mat-icon>heart</mat-icon>
-      </button>
-    </mat-card-content>
-  </mat-card>
+@if (votes.length != 0) {
+  @for (vote of votes; track vote.uri) {
+    <mat-card class="song-card">
+      <mat-card-content>
+        <img [src]="vote.picture" class="albumimage" />
+        <div class="written">
+          <h3 class="title">
+            {{ vote.title }}
+          </h3>
+          <h5 class="artists">
+            {{ vote.artists.join(", ") }}
+          </h5>
+        </div>
+        <button mat-fab (click)="voteOnClick()">
+          <mat-icon>heart</mat-icon>
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+} @else {
+  <h3 class="empty-message">
+    This looks empty, be the first to vote for a song!
+  </h3>
 }
