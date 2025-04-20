@@ -35,7 +35,6 @@ pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
 
     if songs.is_empty() && db.client.is_none() {
         let _ = socket.emit("songs", "not playing");
-        info!("Client not yet connected");
     }
 
     socket.on(
