@@ -1,1 +1,11 @@
-<app-playlist [songs]="this.songs"></app-playlist>
+@if (this.songs.length != 0) {
+  <app-playlist [songs]="this.songs"></app-playlist>
+} @else {
+  <h3>Whoops, looks like the party hasn't started yet</h3>
+  <mat-icon fontIcon="celebration"></mat-icon>
+  <mat-icon fontIcon="liquor"></mat-icon>
+  <mat-icon fontIcon="local_bar"></mat-icon>
+  <mat-icon fontIcon="sports_bar"></mat-icon>
+  <mat-icon fontIcon="wine_bar"></mat-icon>
+  <mat-icon fontIcon="nightlife"></mat-icon>
+}
