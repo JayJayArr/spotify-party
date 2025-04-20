@@ -1,5 +1,15 @@
-<mat-form-field appearance="outline" class="search-box">
-  <mat-label class="search-box">Search...</mat-label>
-  <input matInput placeholder="e.g. Yeet" />
-  <mat-icon matSuffix>rocket-outline</mat-icon>
-</mat-form-field>
+<div class="form-container">
+  <form (ngSubmit)="searchOnClick()">
+    <mat-form-field appearance="outline" class="search-box">
+      <mat-label class="search-box">Search...</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchstring"
+        placeholder="e.g. Yeet"
+        name="searchstring"
+      />
+      <mat-icon matSuffix>sentiment_very_satisfied</mat-icon>
+    </mat-form-field>
+    <button mat-flat-button type="submit" class="search-button">Search</button>
+  </form>
+</div>

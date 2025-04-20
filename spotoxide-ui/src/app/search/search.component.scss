@@ -1,4 +1,15 @@
 .search-box {
   margin-top: 1rem;
-  margin-left: 1rem;
+  // margin-left: 1rem;
+  width: 100%;
+}
+
+.form-container {
+  margin-left: 25%;
+  width: 50%;
+}
+
+.search-button {
+  display: inline-flex;
+  align-items: center;
 }

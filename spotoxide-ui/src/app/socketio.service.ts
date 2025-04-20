@@ -13,6 +13,7 @@ export class SocketioService implements OnDestroy {
   @Output() username = new EventEmitter<string>();
   @Output() songs = new EventEmitter();
   @Output() votes = new EventEmitter();
+  @Output() searchresult = new EventEmitter();
 
   constructor(private http: HttpClient) {
     console.log('SocketService started');
@@ -34,9 +35,20 @@ export class SocketioService implements OnDestroy {
       this.songs.emit(data);
       console.log('Songs: ', data);
     });
+
+    this.socket.on('searchresult', (data) => {
+      this.searchresult.emit(data);
+      console.log('Searchresult: ', data);
+    });
+
     this.socket.on('connect_error', (err) => {
       console.log(err);
     });
+  }
+
+  async search(searchstring: string) {
+    //TODO: verify that this works and that a response is coming
+    this.socket.emit('search', searchstring);
   }
 
   async getToken() {
@@ -47,9 +59,6 @@ export class SocketioService implements OnDestroy {
         let tokendata = await JSON.parse(
           atob(this.token.toString()?.split('.')[1]),
         );
-        console.log('Expired: ', tokendata?.exp <= new Date().valueOf() / 1000);
-        console.log('exp: ', tokendata?.exp);
-        console.log('current time: ', new Date().valueOf() / 1000);
         if (tokendata?.exp <= new Date().valueOf() / 1000) {
           this.refreshToken();
         } else {
