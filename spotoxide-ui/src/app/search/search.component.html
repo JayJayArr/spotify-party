@@ -13,3 +13,25 @@
     <button mat-flat-button type="submit" class="search-button">Search</button>
   </form>
 </div>
+@if (searchresult.length != 0) {
+  @for (song of searchresult; track song.uri) {
+    <mat-card class="song-card">
+      <mat-card-content>
+        <img [src]="song.picture" class="albumimage" />
+        <div class="written">
+          <h3 class="title">
+            {{ song.title }}
+          </h3>
+          <h5 class="artists">
+            {{ song.artists.join(", ") }}
+          </h5>
+        </div>
+        <button mat-icon-button (click)="voteOnClick()">
+          <mat-icon>heart</mat-icon>
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+} @else {
+  <h3 class="empty-message">Go ahead, show us what you like!</h3>
+}
