@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Song, Vote } from '../../types';
+import { Song, User } from '../../types';
 import { VotesService } from '../votes.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,23 +13,43 @@ import { SocketioService } from '../socketio.service';
   styleUrl: './voting.component.scss',
 })
 export class VotingComponent {
-  votes: any[] = [];
+  votes: [Song, User[]][] = [
+    [{ title: '', artists: [], uri: '', picture: '' }, []],
+  ];
+  username: String = '';
   constructor(
     private votesService: VotesService,
     private socketioservice: SocketioService,
   ) {
     this.votesService.votes.subscribe({
-      next: (votes: Vote[]) => {
-        console.log('votes in component from subscription', votes);
+      next: (votes: [Song, User[]][]) => {
         if (votes) {
           this.votes = votes;
+        }
+      },
+    });
+
+    this.socketioservice.username.subscribe({
+      next: (name: String) => {
+        if (name) {
+          this.username = name;
         }
       },
     });
   }
   ngOnInit(): void {
     this.votes = this.votesService.getVotes();
-    console.log('votes in component', this.votes);
+    this.username = this.socketioservice.getUsername();
+    // console.log('votes in component', this.votes);
+    // TODO: Compare the object here, objects are compared by reference, not by value
+    this.votes.forEach((vote) => {
+      console.log(vote[1][0]);
+      console.log({ username: this.username });
+      if (vote[1].includes({ username: this.username })) {
+        console.log(vote[1], 'includes username');
+      }
+    });
+    // console.log('username in component', this.username);
   }
 
   voteOnClick(song: Song) {

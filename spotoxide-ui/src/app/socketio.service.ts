@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { EventEmitter, Injectable, OnDestroy, Output } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
-import { Song, Vote } from '../types';
+import { Song, User } from '../types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SocketioService implements OnDestroy {
   token: String = '';
+  usernamecache: String = '';
   protected socket: Socket = io('ws://localhost:3000', {
     autoConnect: false,
   });
@@ -27,7 +28,7 @@ export class SocketioService implements OnDestroy {
 
   async init() {
     await this.getToken();
-    this.socket.on('votes', (data: Vote[]) => {
+    this.socket.on('votes', (data: [Song, User[]]) => {
       this.votes.emit(data);
     });
 
@@ -53,6 +54,10 @@ export class SocketioService implements OnDestroy {
     this.socket.emit('vote', song);
   }
 
+  getUsername() {
+    return this.usernamecache;
+  }
+
   async getToken() {
     if (localStorage.getItem('token') != null) {
       let localstoragedata = localStorage.getItem('token');
@@ -65,6 +70,7 @@ export class SocketioService implements OnDestroy {
           this.refreshToken();
         } else {
           this.socket.auth = { token: `bearer ${this.token}` };
+          this.usernamecache = tokendata?.name;
           this.username.emit(tokendata?.name);
           this.socket.connect();
         }
@@ -81,6 +87,7 @@ export class SocketioService implements OnDestroy {
         localStorage.setItem('token', token.toString());
         let tokendata = await JSON.parse(atob(token.toString()?.split('.')[1]));
         this.socket.auth = { token: `bearer ${token}` };
+        this.usernamecache = tokendata?.name;
         this.username.emit(tokendata?.name);
         this.socket.connect();
       },

@@ -1,4 +1,4 @@
-@if (this.votes.length != 0) {
+@if (this.votes.length && this.votes[0][0].uri != "") {
   @for (vote of votes; track vote[0].uri) {
     <mat-card class="song-card">
       <mat-card-content>
@@ -11,7 +11,12 @@
             {{ vote[0].artists?.join(", ") || "" }}
           </h5>
         </div>
-        <button mat-mini-fab (click)="voteOnClick(vote)" class="votebutton">
+        <button
+          mat-mini-fab
+          (click)="voteOnClick(vote[0])"
+          class="votebutton"
+          [disabled]="vote[1].includes({ username: username })"
+        >
           <mat-icon>favorite</mat-icon>
         </button>
       </mat-card-content>
