@@ -36,7 +36,7 @@ export class SocketioService implements OnDestroy {
       console.log('Songs: ', data);
     });
 
-    this.socket.on('searchresult', (data) => {
+    this.socket.on('search', (data) => {
       this.searchresult.emit(data);
       console.log('Searchresult: ', data);
     });

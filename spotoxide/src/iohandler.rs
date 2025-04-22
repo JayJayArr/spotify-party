@@ -72,12 +72,11 @@ async fn onvote(
             return;
         }
     };
-    let users = &mut db.lock().await.users;
-    let username = users.0.get(&socket.id).unwrap();
+    let db = &mut db.lock().await;
+    let username = db.users.0.get(&socket.id).unwrap().clone();
     //at this point we can be sure that a song was actually sent
-    let votes = &mut db.lock().await.votes;
-    votes.vote(song.unwrap().uri, username.clone());
-    let _ = io.emit("votes", &json!(votes));
+    db.votes.vote(song.unwrap().uri, username);
+    let _ = io.emit("votes", &json!(db.votes.get_all()));
 }
 
 async fn onsearch(
