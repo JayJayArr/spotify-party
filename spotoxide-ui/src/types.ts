@@ -5,10 +5,12 @@ export interface Song {
   uri: String;
 }
 
-export interface Vote {
-  title: String;
-  artists: String[];
-  picture: String;
-  uri: String;
-  users: String[];
-}
+export type Vote = [
+  data: {
+    title: String;
+    artists: String[];
+    picture: String;
+    uri: String;
+  },
+  users: String[],
+];

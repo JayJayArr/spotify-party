@@ -13,7 +13,7 @@
     <button mat-flat-button type="submit" class="search-button">Search</button>
   </form>
 </div>
-@if (searchresult.length != 0) {
+@if (this.searchresult.length != 0) {
   @for (song of searchresult; track song.uri) {
     <mat-card class="song-card">
       <mat-card-content>
@@ -26,8 +26,8 @@
             {{ song.artists.join(", ") }}
           </h5>
         </div>
-        <button mat-icon-button (click)="voteOnClick()">
-          <mat-icon>heart</mat-icon>
+        <button mat-mini-fab (click)="voteOnClick(song)" class="votebutton">
+          <mat-icon>favorite</mat-icon>
         </button>
       </mat-card-content>
     </mat-card>

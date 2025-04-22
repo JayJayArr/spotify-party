@@ -7,14 +7,19 @@ import { Vote } from '../types';
 })
 export class VotesService {
   votescache: Vote[] = [];
-  @Output() votes = new EventEmitter();
+  @Output() votes = new EventEmitter<Vote[]>();
 
   constructor(private socketioservice: SocketioService) {
     this.socketioservice.votes.subscribe({
-      next: (votes: Vote[]) => {
+      next: (votes: any) => {
         if (votes) {
-          this.votescache = votes;
-          this.votes.emit(this.votescache);
+          if (!votes.length) {
+            this.votescache = [];
+            this.votescache.push(votes);
+          } else {
+            this.votescache = [...votes];
+            this.votes.emit(this.votescache);
+          }
         }
       },
     });

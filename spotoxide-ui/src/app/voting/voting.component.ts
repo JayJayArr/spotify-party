@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { Vote } from '../../types';
+import { Song, Vote } from '../../types';
 import { VotesService } from '../votes.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { SocketioService } from '../socketio.service';
 
 @Component({
   selector: 'app-voting',
@@ -12,10 +13,14 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './voting.component.scss',
 })
 export class VotingComponent {
-  votes: Vote[] = [];
-  constructor(private votesService: VotesService) {
+  votes: any[] = [];
+  constructor(
+    private votesService: VotesService,
+    private socketioservice: SocketioService,
+  ) {
     this.votesService.votes.subscribe({
       next: (votes: Vote[]) => {
+        console.log('votes in component from subscription', votes);
         if (votes) {
           this.votes = votes;
         }
@@ -24,7 +29,10 @@ export class VotingComponent {
   }
   ngOnInit(): void {
     this.votes = this.votesService.getVotes();
+    console.log('votes in component', this.votes);
   }
 
-  voteOnClick() { }
+  voteOnClick(song: Song) {
+    this.socketioservice.vote(song);
+  }
 }

@@ -24,9 +24,23 @@ import { MatCardModule } from '@angular/material/card';
 export class SearchComponent {
   constructor(private socketioservice: SocketioService) {
     this.socketioservice.searchresult.subscribe({
-      next: (searchresult: Song[]) => {
+      next: (searchresult: any) => {
         if (searchresult) {
-          this.searchresult = searchresult;
+          let collection: any = [];
+          searchresult.items.forEach((song: any) => {
+            let artists: String[] = [];
+            song.artists.forEach((artist: any) => {
+              artists.push(artist.name);
+            });
+            let newsong: Song = {
+              title: song.name,
+              artists: artists,
+              uri: song.uri,
+              picture: song.album.images[0].url,
+            };
+            collection.push(newsong);
+          });
+          this.searchresult = collection;
         }
       },
     });
@@ -34,10 +48,10 @@ export class SearchComponent {
   searchstring = '';
   searchresult: Song[] = [];
   searchOnClick() {
-    // event?.preventDefault();
-    console.log('got search', this.searchstring);
     this.socketioservice.search(this.searchstring);
   }
 
-  voteOnClick() { }
+  voteOnClick(song: Song) {
+    this.socketioservice.vote(song);
+  }
 }

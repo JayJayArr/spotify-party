@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use reqwest::StatusCode;
 use rmpv::Value;
-use serde_json::json;
 use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State, TryData},
@@ -37,14 +36,14 @@ pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
         let _ = socket.emit("songs", "not playing");
     }
 
-    socket.on(
-        "songs",
-        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
-            let queue = &db.lock().await.queue;
-            let songs = &queue.get();
-            let _ = socket.emit("songs", songs);
-        },
-    );
+    // socket.on(
+    //     "songs",
+    //     async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
+    //         let queue = &db.lock().await.queue;
+    //         let songs = &queue.get();
+    //         let _ = socket.emit("songs", songs);
+    //     },
+    // );
 
     socket.on("vote", onvote);
 
@@ -75,8 +74,10 @@ async fn onvote(
     let db = &mut db.lock().await;
     let username = db.users.0.get(&socket.id).unwrap().clone();
     //at this point we can be sure that a song was actually sent
-    db.votes.vote(song.unwrap().uri, username);
-    let _ = io.emit("votes", &json!(db.votes.get_all()));
+    db.votes.vote(song.unwrap(), username);
+    let votes = db.votes.get_all();
+    println!("{:?}", votes);
+    let _ = io.emit("votes", &votes).await;
 }
 
 async fn onsearch(

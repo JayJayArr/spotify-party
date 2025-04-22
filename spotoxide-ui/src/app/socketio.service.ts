@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { EventEmitter, Injectable, OnDestroy, Output } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
+import { Song, Vote } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -26,19 +27,16 @@ export class SocketioService implements OnDestroy {
 
   async init() {
     await this.getToken();
-    this.socket.on('votes', (data) => {
-      this.songs.emit(data);
-      console.log('Votes: ', data);
+    this.socket.on('votes', (data: Vote[]) => {
+      this.votes.emit(data);
     });
 
     this.socket.on('songs', (data) => {
       this.songs.emit(data);
-      console.log('Songs: ', data);
     });
 
     this.socket.on('search', (data) => {
       this.searchresult.emit(data);
-      console.log('Searchresult: ', data);
     });
 
     this.socket.on('connect_error', (err) => {
@@ -46,9 +44,13 @@ export class SocketioService implements OnDestroy {
     });
   }
 
-  async search(searchstring: string) {
-    //TODO: verify that this works and that a response is coming
-    this.socket.emit('search', searchstring);
+  async search(searchstring: String) {
+    this.socket.emit('search', { searchstring });
+  }
+
+  async vote(song: Song) {
+    console.log('Voting for id: ', song);
+    this.socket.emit('vote', song);
   }
 
   async getToken() {

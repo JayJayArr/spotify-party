@@ -17,3 +17,29 @@
 .empty-message {
   text-align: center;
 }
+
+.albumimage {
+  height: 6rem;
+  width: 6rem;
+  white-space: nowrap;
+  float: left;
+}
+
+.song-card {
+  margin-left: 1rem;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.written {
+  white-space: nowrap;
+  float: left;
+  margin-left: 1rem;
+}
+
+.votebutton {
+  float: right;
+  top: 50%;
+  transform: translateY(50%);
+}

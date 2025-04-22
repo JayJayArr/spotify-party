@@ -1,18 +1,18 @@
-@if (votes.length != 0) {
-  @for (vote of votes; track vote.uri) {
+@if (this.votes.length != 0) {
+  @for (vote of votes; track vote[0].uri) {
     <mat-card class="song-card">
       <mat-card-content>
-        <img [src]="vote.picture" class="albumimage" />
+        <img [src]="vote[0].picture" class="albumimage" />
         <div class="written">
           <h3 class="title">
-            {{ vote.title }}
+            {{ vote[0].title }}
           </h3>
           <h5 class="artists">
-            {{ vote.artists.join(", ") }}
+            {{ vote[0].artists?.join(", ") || "" }}
           </h5>
         </div>
-        <button mat-icon-button (click)="voteOnClick()">
-          <mat-icon>heart</mat-icon>
+        <button mat-mini-fab (click)="voteOnClick(vote)" class="votebutton">
+          <mat-icon>favorite</mat-icon>
         </button>
       </mat-card-content>
     </mat-card>
