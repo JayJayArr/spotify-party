@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use auth::signin_handler;
 use axum::routing::{get, post};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use handler::*;
 use iohandler::{auth_middleware, on_connect};
 use rnglib::{Language, RNG};
