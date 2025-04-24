@@ -2114,6 +2114,7 @@ dependencies = [
 [[package]]
 name = "spotify-rs"
 version = "0.3.14"
+source = "git+https://github.com/JayJayArr/spotify-rs.git#086e168d1f8cdcda19f5de0fbf28942b1d67e1e4"
 dependencies = [
  "base64 0.21.7",
  "chrono",
