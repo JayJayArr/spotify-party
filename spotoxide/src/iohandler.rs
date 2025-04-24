@@ -36,26 +36,11 @@ pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
         let _ = socket.emit("songs", "not playing");
     }
 
-    // socket.on(
-    //     "songs",
-    //     async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
-    //         let queue = &db.lock().await.queue;
-    //         let songs = &queue.get();
-    //         let _ = socket.emit("songs", songs);
-    //     },
-    // );
-
     socket.on("vote", onvote);
 
     socket.on("search", onsearch);
 
-    socket.on_disconnect(
-        async |socket: SocketRef, State(db): State<Arc<Mutex<Db>>>| {
-            //remove the disconnected socket from the users Vec
-            let users = &mut db.lock().await.users.0;
-            users.remove(&socket.id);
-        },
-    );
+    socket.on_disconnect(on_disconnect)
 }
 
 async fn onvote(
@@ -112,6 +97,12 @@ async fn onsearch(
             // let _ = socket.emit("search", &result);
         }
     }
+}
+
+async fn on_disconnect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
+    //remove the disconnected socket from the users Vec
+    let users = &mut db.lock().await.users.0;
+    users.remove(&socket.id);
 }
 
 pub async fn auth_middleware(

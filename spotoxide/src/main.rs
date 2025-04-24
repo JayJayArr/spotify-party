@@ -1,5 +1,3 @@
-use std::{collections::HashMap, sync::Arc};
-
 use auth::signin_handler;
 use axum::routing::{get, post};
 use db::Db;
@@ -12,6 +10,7 @@ use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
 use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
+use std::sync::Arc;
 use tokio::{signal, sync::Mutex};
 use tokio_cron_scheduler::{Job, JobScheduler};
 use tokio_util::task::TaskTracker;
@@ -39,15 +38,12 @@ static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     dotenv().ok();
-    let mut store = HashMap::new();
     let client_id =
         std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
     info!(?client_id, "Spotify Client Id");
-    store.insert("client_id", client_id.clone());
     let client_secret =
         std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
     info!(?client_secret, "Spotify Client Secret");
-    store.insert("client_secret", client_secret.clone());
 
     //setup components
     let rng = RNG::from(&Language::Fantasy);
@@ -113,7 +109,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             })
         })?)
         .await?;
-    //create a second cron job
+
+    //create a second cron job for the voting cycle
     let crondbhandle = dbarc.clone();
     let croniohandle = io.clone();
     sched
@@ -165,6 +162,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await
             .expect("Could not start axum server");
     });
+
+    //shutdown hook
     match signal::ctrl_c().await {
         Ok(()) => {
             info!("graceful shutdown initiated, shutting cron scheduler down");
@@ -176,7 +175,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(err) => {
             eprintln!("Unable to listen for shutdown signal: {}", err);
-            // we also shut down in case of error
         }
     }
 
