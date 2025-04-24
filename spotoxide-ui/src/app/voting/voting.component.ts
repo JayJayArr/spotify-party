@@ -42,17 +42,13 @@ export class VotingComponent {
     this.username = this.socketioservice.getUsername();
     // console.log('votes in component', this.votes);
     // TODO: Compare the object here, objects are compared by reference, not by value
-    this.votes.forEach((vote) => {
-      console.log(vote[1][0]);
-      console.log({ username: this.username });
-      if (vote[1].includes({ username: this.username })) {
-        console.log(vote[1], 'includes username');
-      }
-    });
-    // console.log('username in component', this.username);
   }
 
   voteOnClick(song: Song) {
     this.socketioservice.vote(song);
+  }
+
+  checkUsername(user: User) {
+    return user.username == this.username;
   }
 }

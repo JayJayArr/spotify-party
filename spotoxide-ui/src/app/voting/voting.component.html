@@ -15,7 +15,7 @@
           mat-mini-fab
           (click)="voteOnClick(vote[0])"
           class="votebutton"
-          [disabled]="vote[1].includes({ username: username })"
+          [disabled]="vote[1].some(checkUsername)"
         >
           <mat-icon>favorite</mat-icon>
         </button>
