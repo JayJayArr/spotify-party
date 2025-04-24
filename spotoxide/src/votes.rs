@@ -24,6 +24,24 @@ impl Votes {
         }
     }
 
+    pub fn get_most_popular(&mut self) -> Option<String> {
+        let mut most_popular_song_id: Option<String> = None;
+        let mut most_votes: usize = 0;
+
+        let _ = self.0.iter().map(|(k, v)| {
+            if v.1.len() > most_votes {
+                most_votes = v.1.len();
+                most_popular_song_id = Some(k.clone());
+            }
+        });
+        if let Some(songid) = most_popular_song_id {
+            most_popular_song_id = Some(songid.clone());
+            let _ = self.0.remove(&songid);
+        }
+
+        most_popular_song_id
+    }
+
     // pub fn get(&self, song: Song) -> Option<&Vec<User>> {
     //     self.0.get(&id)
     // }

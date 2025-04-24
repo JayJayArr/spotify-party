@@ -98,24 +98,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     io.ns("/", on_connect.with(auth_middleware));
 
     let sched = JobScheduler::new().await?;
-
+    //create a cron job to update the queue
     let crondbhandle = dbarc.clone();
     let croniohandle = io.clone();
     sched
-        .add(Job::new_async("1/10 * * * * *", move |_uuid, _l| {
+        .add(Job::new_async("every 10 seconds", move |_uuid, _l| {
             Box::pin({
                 let dbhandle = crondbhandle.clone();
                 let iohandle = croniohandle.clone();
                 async move {
-                    info!("Cron Job running");
+                    info!("Updating queue");
                     let db = &mut dbhandle.lock().await;
-                    match &db.client {
+                    match &mut db.client {
                         None => {}
                         Some(client) => {
-                            let currently_playing = client.clone().get_user_queue().await.unwrap();
+                            let currently_playing = client.get_user_queue().await.unwrap();
                             // info!(?currently_playing, "currently_playing");
                             db.queue = currently_playing.into();
                             let _ = iohandle.emit("songs", &db.queue.get()).await;
+                        }
+                    }
+                }
+            })
+        })?)
+        .await?;
+    //create a second cron job
+    let crondbhandle = dbarc.clone();
+    let croniohandle = io.clone();
+    sched
+        .add(Job::new_async("every 2 minutes", move |_uuid, _l| {
+            Box::pin({
+                let dbhandle = crondbhandle.clone();
+                let iohandle = croniohandle.clone();
+                async move {
+                    info!("Vote cycle");
+                    let db = &mut dbhandle.lock().await;
+                    if let Some(songid) = &db.votes.get_most_popular() {
+                        let songid = (songid.clone()).clone();
+                        match &mut db.client {
+                            None => {
+                                info!("Client unauthorized");
+                            }
+                            Some(client) => {
+                                info!("Client active");
+                                client.add_item_to_queue(songid);
+                                let _ = iohandle.emit("songs", &db.votes.get_all()).await;
+                            }
                         }
                     }
                 }

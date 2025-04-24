@@ -28,16 +28,16 @@ impl SongQueue {
         self.songs.truncate(20);
     }
 
-    pub fn replace(&mut self, songs: Vec<Song>) {
-        self.last_updated = chrono::offset::Utc::now();
-        self.songs.clear();
-        self.songs.append(&mut VecDeque::from(songs));
-    }
-
-    pub fn skip(&mut self) {
-        self.last_updated = chrono::offset::Utc::now();
-        self.songs.pop_front();
-    }
+    // pub fn replace(&mut self, songs: Vec<Song>) {
+    //     self.last_updated = chrono::offset::Utc::now();
+    //     self.songs.clear();
+    //     self.songs.append(&mut VecDeque::from(songs));
+    // }
+    //
+    // pub fn skip(&mut self) {
+    //     self.last_updated = chrono::offset::Utc::now();
+    //     self.songs.pop_front();
+    // }
 
     pub fn get(&self) -> VecDeque<Song> {
         self.songs.clone()
