@@ -16,13 +16,13 @@ pub struct SongQueue {
 impl SongQueue {
     pub fn new() -> Self {
         Self {
-            last_updated: chrono::offset::Utc::now(),
+            last_updated: chrono::Utc::now(),
             songs: VecDeque::new(),
         }
     }
     //used to update the songs without replacing them
     pub fn push(&mut self, song: Song) {
-        self.last_updated = chrono::offset::Utc::now();
+        self.last_updated = chrono::Utc::now();
         self.songs.push_back(song);
         //truncate the songs to be a max of
         self.songs.truncate(20);

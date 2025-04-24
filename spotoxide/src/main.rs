@@ -2,9 +2,12 @@ use std::{collections::HashMap, sync::Arc};
 
 use auth::signin_handler;
 use axum::routing::{get, post};
+use db::Db;
 use dotenvy::dotenv;
 use handler::*;
+use health::health_handler;
 use iohandler::{auth_middleware, on_connect};
+use peak_alloc::PeakAlloc;
 use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
@@ -20,31 +23,17 @@ use votes::Votes;
 
 mod app;
 mod auth;
+mod db;
 mod handler;
+mod health;
 mod iohandler;
 mod song;
 mod song_queue;
 mod user;
 mod votes;
 
-pub struct Db {
-    users: Usernames,
-    votes: Votes,
-    queue: SongQueue,
-    rng: RNG,
-    client_unauth: spotify_rs::client::Client<
-        spotify_rs::auth::UnAuthenticated,
-        AuthCodeFlow,
-        spotify_rs::auth::CsrfVerifier,
-    >,
-    client: Option<
-        spotify_rs::client::Client<
-            spotify_rs::auth::Token,
-            AuthCodeFlow,
-            spotify_rs::auth::NoVerifier,
-        >,
-    >,
-}
+#[global_allocator]
+static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -161,6 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .route("/signin", post(signin_handler))
             .route("/login", get(|| async { redirecturlstring }))
             .route("/redirect", get(redirect_handler))
+            .route("/health", get(health_handler))
             .with_state(dbarc.clone())
             .layer(iolayer)
             .layer(CorsLayer::permissive());

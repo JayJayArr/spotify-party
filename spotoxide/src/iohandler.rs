@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use reqwest::StatusCode;
+use axum::http::StatusCode;
 use rmpv::Value;
 use socketioxide::{
     SocketIo,

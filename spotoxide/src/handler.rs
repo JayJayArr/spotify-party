@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
+use axum::http::StatusCode;
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use reqwest::StatusCode;
 use tokio::sync::Mutex;
 use tracing::info;
 
