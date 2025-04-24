@@ -9,14 +9,16 @@ use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
 use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
-use tokio::sync::Mutex;
+use tokio::{signal, sync::Mutex};
 use tokio_cron_scheduler::{Job, JobScheduler};
+use tokio_util::task::TaskTracker;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 use user::Usernames;
 use votes::Votes;
 
+mod app;
 mod auth;
 mod handler;
 mod iohandler;
@@ -97,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     io.ns("/", on_connect.with(auth_middleware));
 
-    let sched = JobScheduler::new().await?;
+    let mut sched = JobScheduler::new().await?;
     //create a cron job to update the queue
     let crondbhandle = dbarc.clone();
     let croniohandle = io.clone();
@@ -150,22 +152,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             })
         })?)
         .await?;
-    sched.shutdown_on_ctrl_c();
-    sched.start().await?;
 
-    let app = axum::Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
-        .route("/signin", post(signin_handler))
-        .route("/login", get(|| async { redirecturlstring }))
-        .route("/redirect", get(redirect_handler))
-        .with_state(dbarc.clone())
-        .layer(iolayer)
-        .layer(CorsLayer::permissive());
+    let tracker = TaskTracker::new();
+    sched.start().await.expect("could not start cron scheduler");
+    tracker.spawn(async move {
+        let app = axum::Router::new()
+            .route("/", get(|| async { "Hello, World!" }))
+            .route("/signin", post(signin_handler))
+            .route("/login", get(|| async { redirecturlstring }))
+            .route("/redirect", get(redirect_handler))
+            .with_state(dbarc.clone())
+            .layer(iolayer)
+            .layer(CorsLayer::permissive());
 
-    info!("Starting server");
+        info!("Starting server");
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+        let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+            .await
+            .expect("could not bind to port");
+        axum::serve(listener, app)
+            .with_graceful_shutdown(app::shutdown_signal())
+            .await
+            .expect("Could not start axum server");
+    });
+    match signal::ctrl_c().await {
+        Ok(()) => {
+            info!("graceful shutdown initiated, shutting cron scheduler down");
+            let _ = sched.shutdown().await;
+            tracker.close();
+            info!("tracker closing");
+            tracker.wait().await;
+            info!("good bye");
+        }
+        Err(err) => {
+            eprintln!("Unable to listen for shutdown signal: {}", err);
+            // we also shut down in case of error
+        }
+    }
 
     Ok(())
 }
