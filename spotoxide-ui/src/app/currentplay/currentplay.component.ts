@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { PlaylistComponent } from '../playlist/playlist.component';
 import { Song } from '../../types';
-import { SongsService } from '../songs.service';
 import { MatIconModule } from '@angular/material/icon';
+import { SocketioService } from '../socketio.service';
 
 @Component({
   selector: 'app-currentplay',
@@ -12,8 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class CurrentplayComponent implements OnInit {
   songs: Song[] = [];
-  constructor(private songsservice: SongsService) {
-    this.songsservice.songs.subscribe({
+  constructor(private socketioservice: SocketioService) {
+    this.socketioservice.songs.subscribe({
       next: (songs: Song[]) => {
         if (songs) {
           this.songs = songs;
@@ -22,6 +22,6 @@ export class CurrentplayComponent implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.songs = this.songsservice.getSongs();
+    this.songs = this.socketioservice.getSongs();
   }
 }

@@ -9,7 +9,12 @@ import { Song, User } from '../types';
 export class SocketioService implements OnDestroy {
   token: String = '';
   usernamecache: String = '';
-  protected socket: Socket = io('ws://localhost:3000', {
+  songscache: Song[] = [];
+  votescache: [Song, User[]][] = [
+    [{ title: '', artists: [], uri: '', picture: '' }, []],
+  ];
+
+  protected socket: Socket = io('ws://192.168.0.30:3000', {
     autoConnect: false,
   });
   @Output() username = new EventEmitter<string>();
@@ -58,6 +63,14 @@ export class SocketioService implements OnDestroy {
     return this.usernamecache;
   }
 
+  getSongs() {
+    return this.songscache;
+  }
+
+  getVotes() {
+    return this.votescache;
+  }
+
   async getToken() {
     if (localStorage.getItem('token') != null) {
       let localstoragedata = localStorage.getItem('token');
@@ -73,6 +86,7 @@ export class SocketioService implements OnDestroy {
           this.usernamecache = tokendata?.name;
           this.username.emit(tokendata?.name);
           this.socket.connect();
+          console.log('socket connected');
         }
       }
     } else {
@@ -81,7 +95,7 @@ export class SocketioService implements OnDestroy {
   }
 
   refreshToken() {
-    this.http.post('http://localhost:3000/signin', {}).subscribe({
+    this.http.post('http://:3000/signin', {}).subscribe({
       next: async (token) => {
         this.token = token.toString();
         localStorage.setItem('token', token.toString());
@@ -90,6 +104,7 @@ export class SocketioService implements OnDestroy {
         this.usernamecache = tokendata?.name;
         this.username.emit(tokendata?.name);
         this.socket.connect();
+        console.log('socket connected');
       },
     });
   }

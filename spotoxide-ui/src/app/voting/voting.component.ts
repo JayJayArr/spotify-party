@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { Song, User } from '../../types';
-import { VotesService } from '../votes.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,11 +16,9 @@ export class VotingComponent {
     [{ title: '', artists: [], uri: '', picture: '' }, []],
   ];
   username: String = '';
-  constructor(
-    private votesService: VotesService,
-    private socketioservice: SocketioService,
-  ) {
-    this.votesService.votes.subscribe({
+
+  constructor(private socketioservice: SocketioService) {
+    this.socketioservice.votes.subscribe({
       next: (votes: [Song, User[]][]) => {
         if (votes) {
           this.votes = votes;
@@ -33,14 +30,17 @@ export class VotingComponent {
       next: (name: String) => {
         if (name) {
           this.username = name;
+          console.log('username in voting component:', this.username);
         }
       },
     });
   }
+
   ngOnInit(): void {
-    this.votes = this.votesService.getVotes();
+    this.votes = this.socketioservice.getVotes();
     this.username = this.socketioservice.getUsername();
-    // console.log('votes in component', this.votes);
+    console.log('votes in voting component', this.votes);
+    console.log('username in voting component', this.username);
     // TODO: Compare the object here, objects are compared by reference, not by value
   }
 
@@ -49,6 +49,8 @@ export class VotingComponent {
   }
 
   checkUsername(user: User) {
-    return user.username == this.username;
+    return user.username === this.username;
   }
+
+  checkuser = (element: User) => element.username == this.username;
 }
