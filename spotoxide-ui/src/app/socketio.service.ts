@@ -33,11 +33,13 @@ export class SocketioService implements OnDestroy {
 
   async init() {
     await this.getToken();
-    this.socket.on('votes', (data: [Song, User[]]) => {
+    this.socket.on('votes', (data: [Song, User[]][]) => {
+      this.votescache = data;
       this.votes.emit(data);
     });
 
     this.socket.on('songs', (data) => {
+      this.songscache = data;
       this.songs.emit(data);
     });
 

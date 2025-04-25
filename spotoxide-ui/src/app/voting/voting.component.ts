@@ -30,7 +30,6 @@ export class VotingComponent {
       next: (name: String) => {
         if (name) {
           this.username = name;
-          console.log('username in voting component:', this.username);
         }
       },
     });
@@ -40,16 +39,10 @@ export class VotingComponent {
     this.votes = this.socketioservice.getVotes();
     this.username = this.socketioservice.getUsername();
     console.log('votes in voting component', this.votes);
-    console.log('username in voting component', this.username);
-    // TODO: Compare the object here, objects are compared by reference, not by value
   }
 
   voteOnClick(song: Song) {
     this.socketioservice.vote(song);
-  }
-
-  checkUsername(user: User) {
-    return user.username === this.username;
   }
 
   checkuser = (element: User) => element.username == this.username;
