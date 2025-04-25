@@ -52,6 +52,7 @@ export class SearchComponent {
   }
 
   voteOnClick(song: Song) {
+    event?.preventDefault();
     this.socketioservice.vote(song);
   }
 }

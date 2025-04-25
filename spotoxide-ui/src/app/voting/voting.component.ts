@@ -42,6 +42,7 @@ export class VotingComponent {
   }
 
   voteOnClick(song: Song) {
+    event?.preventDefault();
     this.socketioservice.vote(song);
   }
 

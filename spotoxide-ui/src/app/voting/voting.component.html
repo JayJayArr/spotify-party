@@ -15,9 +15,12 @@
           mat-mini-fab
           (click)="voteOnClick(vote[0])"
           class="votebutton"
-          [disabled]="vote[1].some(checkUsername)"
+          [disabled]="vote[1].some(checkuser)"
         >
           <mat-icon>favorite</mat-icon>
+          <h4 class="vote-count">
+            {{ vote[1].length }}
+          </h4>
         </button>
       </mat-card-content>
     </mat-card>

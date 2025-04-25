@@ -15,6 +15,7 @@ serde = {version = "1.0.219", features = ["derive"]}
 socketioxide = {version = "0.16.2", features = ["v4","state", "tracing", "extensions"]}
 # spotify-rs = "0.3.14"
 spotify-rs = {git  = "https://github.com/JayJayArr/spotify-rs.git"}
+# spotify-rs = {path = "../../spotify-rs"}
 tokio = {version = "1.44.2", features = ["rt-multi-thread", "signal"]}
 tokio-cron-scheduler = {version = "0.13.0", features = ["tracing-subscriber", "english"]}
 tokio-util = {version = "0.7.15" , features = ["rt"]}
