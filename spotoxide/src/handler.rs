@@ -35,7 +35,7 @@ pub async fn redirect_handler(
         .unwrap();
 
     db.client = Some(spotify.clone());
-    info!(?spotify, "Client was connected");
+    info!("Client connected to spotify");
 
     // let user_playlists = spotify
     //     .current_user_playlists()

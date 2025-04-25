@@ -34,16 +34,14 @@ mod votes;
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     dotenv().ok();
     let client_id =
         std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
-    info!(?client_id, "Spotify Client Id");
     let client_secret =
         std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
-    info!(?client_secret, "Spotify Client Secret");
 
     //setup components
     let rng = RNG::from(&Language::Fantasy);
@@ -100,9 +98,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         None => {}
                         Some(client) => {
                             let currently_playing = client.get_user_queue().await.unwrap();
-                            // info!(?currently_playing, "currently_playing");
                             db.queue = currently_playing.into();
                             let _ = iohandle.emit("songs", &db.queue.get()).await;
+                            let _ = iohandle.emit("votes", &db.votes.get_all()).await;
                         }
                     }
                 }
@@ -121,17 +119,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 async move {
                     info!("Vote cycle");
                     let db = &mut dbhandle.lock().await;
-                    if let Some(songid) = &db.votes.get_most_popular() {
-                        let songid = (songid.clone()).clone();
-                        match &mut db.client {
-                            None => {
-                                info!("Client unauthorized");
+                    match &db.votes.get_most_popular() {
+                        Some(songid) => {
+                            let songid = songid.clone();
+                            match &mut db.client {
+                                None => {
+                                    info!("Client unauthorized");
+                                }
+                                Some(client) => {
+                                    info!("Client active");
+                                    let _ = client.add_item_to_queue(songid).send().await;
+                                    let _ = iohandle.emit("songs", &db.votes.get_all()).await;
+                                }
                             }
-                            Some(client) => {
-                                info!("Client active");
-                                client.add_item_to_queue(songid);
-                                let _ = iohandle.emit("songs", &db.votes.get_all()).await;
-                            }
+                        }
+                        None => {
+                            info!("could not determine most popular song");
                         }
                     }
                 }

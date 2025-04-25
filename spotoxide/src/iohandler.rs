@@ -50,7 +50,7 @@ async fn onvote(
     TryData(song): TryData<Song>,
 ) {
     match song {
-        Ok(ref _song) => info!("got message for song request"),
+        Ok(ref song) => info!("song request: {:?}", song),
         Err(ref _err) => {
             let _ = socket.emit("error", "Song is missing or faulty");
             return;
@@ -58,10 +58,8 @@ async fn onvote(
     };
     let db = &mut db.lock().await;
     let username = db.users.0.get(&socket.id).unwrap().clone();
-    //at this point we can be sure that a song was actually sent
-    db.votes.vote(song.unwrap(), username);
-    let votes = db.votes.get_all();
-    println!("{:?}", votes);
+    let votes = db.votes.vote(song.unwrap(), username);
+
     let _ = io.emit("votes", &votes).await;
 }
 
@@ -87,14 +85,12 @@ async fn onsearch(
             match response {
                 Ok(responsecontent) => {
                     let result = responsecontent.tracks;
-                    //This might need conversion into a Vec<Songs>
                     let _ = socket.emit("search", &result);
                 }
                 Err(err) => {
                     let _ = socket.emit("search", &err);
                 }
             };
-            // let _ = socket.emit("search", &result);
         }
     }
 }
@@ -110,12 +106,10 @@ pub async fn auth_middleware(
     Data(data): Data<Value>,
     State(db): State<Arc<Mutex<Db>>>,
 ) -> Result<(), AuthError> {
-    // info!(?data, "Socket auth");
     let binding = match data.as_map() {
         Some(map) => match map.first() {
             Some(data) => data.1.clone(),
             None => {
-                info!(?map, "Socket rejected");
                 return Err(AuthError {
                     message: "Empty Token not allowed".to_string(),
                     status_code: StatusCode::UNAUTHORIZED,
@@ -123,7 +117,6 @@ pub async fn auth_middleware(
             }
         },
         None => {
-            info!(?data, "Socket rejected");
             return Err(AuthError {
                 message: "No Token provided".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,
@@ -144,7 +137,6 @@ pub async fn auth_middleware(
             );
         }
         Err(_err) => {
-            info!(?data, "Socket rejected");
             return Err(AuthError {
                 message: "Error decoding token".to_string(),
                 status_code: StatusCode::UNAUTHORIZED,

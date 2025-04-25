@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::{song::Song, user::User};
 #[derive(Default, Clone, Serialize, Deserialize)]
@@ -10,7 +11,7 @@ impl Votes {
         Self(HashMap::new())
     }
 
-    pub fn vote(&mut self, song: Song, user: User) {
+    pub fn vote(&mut self, song: Song, user: User) -> &HashMap<String, (Song, Vec<User>)> {
         let (_data, users) = match self.0.contains_key(&song.uri) {
             true => self.0.get_mut(&song.uri).unwrap(),
             false => {
@@ -22,18 +23,21 @@ impl Votes {
         if !users.contains(&user) {
             users.push(user);
         }
+
+        &self.0
     }
 
     pub fn get_most_popular(&mut self) -> Option<String> {
         let mut most_popular_song_id: Option<String> = None;
         let mut most_votes: usize = 0;
 
-        let _ = self.0.iter().map(|(k, v)| {
-            if v.1.len() > most_votes {
-                most_votes = v.1.len();
-                most_popular_song_id = Some(k.clone());
+        for (id, data) in self.0.iter() {
+            if data.1.len() > most_votes {
+                most_votes = data.1.len();
+                most_popular_song_id = Some(id.clone());
             }
-        });
+        }
+
         if let Some(songid) = most_popular_song_id {
             most_popular_song_id = Some(songid.clone());
             let _ = self.0.remove(&songid);
