@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { EventEmitter, Injectable, OnDestroy, Output } from '@angular/core';
 import { Socket, io } from 'socket.io-client';
 import { Song, User } from '../types';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +15,8 @@ export class SocketioService implements OnDestroy {
     [{ title: '', artists: [], uri: '', picture: '' }, []],
   ];
 
-  protected socket: Socket = io('ws://192.168.0.30:3000', {
+  apiurl = environment.apiBaseUrl;
+  protected socket: Socket = io(`${this.apiurl}:3000`, {
     autoConnect: false,
   });
   @Output() username = new EventEmitter<string>();
@@ -97,7 +99,7 @@ export class SocketioService implements OnDestroy {
   }
 
   refreshToken() {
-    this.http.post('http://:3000/signin', {}).subscribe({
+    this.http.post(`${this.apiurl}:3000/signin`, {}).subscribe({
       next: async (token) => {
         this.token = token.toString();
         localStorage.setItem('token', token.toString());
