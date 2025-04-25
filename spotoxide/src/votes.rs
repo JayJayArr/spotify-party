@@ -1,9 +1,17 @@
+use crate::{song::Song, user::User};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
-use tracing::info;
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SongSearch {
+    pub searchstring: String,
+}
 
-use crate::{song::Song, user::User};
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct VoteRequest {
+    pub uri: String,
+}
+
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Votes(HashMap<String, (Song, Vec<User>)>);
 impl Votes {
@@ -46,19 +54,7 @@ impl Votes {
         most_popular_song_id
     }
 
-    // pub fn get(&self, song: Song) -> Option<&Vec<User>> {
-    //     self.0.get(&id)
-    // }
     pub fn get_all(&self) -> Vec<(Song, Vec<User>)> {
         self.0.values().cloned().collect()
     }
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SongSearch {
-    pub searchstring: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct VoteRequest {
-    pub uri: String,
 }

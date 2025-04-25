@@ -1,10 +1,9 @@
-use std::collections::VecDeque;
-
+use crate::song::Song;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use spotify_rs::model::{PlayableItem, player::Queue};
+use std::collections::VecDeque;
 
-use crate::song::Song;
 #[derive(Default, Clone, Serialize, Debug)]
 pub struct SongQueue {
     //last_updated will be checked for the broadcast,
@@ -27,17 +26,6 @@ impl SongQueue {
         //truncate the songs to be a max of
         self.songs.truncate(20);
     }
-
-    // pub fn replace(&mut self, songs: Vec<Song>) {
-    //     self.last_updated = chrono::offset::Utc::now();
-    //     self.songs.clear();
-    //     self.songs.append(&mut VecDeque::from(songs));
-    // }
-    //
-    // pub fn skip(&mut self) {
-    //     self.last_updated = chrono::offset::Utc::now();
-    //     self.songs.pop_front();
-    // }
 
     pub fn get(&self) -> VecDeque<Song> {
         self.songs.clone()

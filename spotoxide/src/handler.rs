@@ -1,14 +1,12 @@
-use std::{collections::HashMap, sync::Arc};
-
+use crate::Db;
 use axum::http::StatusCode;
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tracing::info;
-
-use crate::Db;
 
 pub async fn redirect_handler(
     State(db): State<Arc<Mutex<Db>>>,

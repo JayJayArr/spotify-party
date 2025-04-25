@@ -1,15 +1,3 @@
-use std::sync::Arc;
-
-use axum::http::StatusCode;
-use rmpv::Value;
-use socketioxide::{
-    SocketIo,
-    extract::{Data, SocketRef, State, TryData},
-};
-use spotify_rs::model::search::Item;
-use tokio::sync::Mutex;
-use tracing::info;
-
 use crate::{
     Db,
     auth::{AuthError, decode_jwt},
@@ -17,6 +5,16 @@ use crate::{
     user::User,
     votes::SongSearch,
 };
+use axum::http::StatusCode;
+use rmpv::Value;
+use socketioxide::{
+    SocketIo,
+    extract::{Data, SocketRef, State, TryData},
+};
+use spotify_rs::model::search::Item;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use tracing::info;
 
 pub async fn on_connect(socket: SocketRef, State(db): State<Arc<Mutex<Db>>>) {
     info!(ns = socket.ns(), ?socket.id, "Socket.IO connected");

@@ -1,7 +1,6 @@
+use crate::{song_queue::SongQueue, user::Usernames, votes::Votes};
 use rnglib::RNG;
 use spotify_rs::AuthCodeFlow;
-
-use crate::{song_queue::SongQueue, user::Usernames, votes::Votes};
 
 pub struct Db {
     pub users: Usernames,

@@ -8,8 +8,6 @@ pub struct Song {
     picture: String,
     pub uri: String, //the Spotify identifier
 }
-// #[derive(Default, Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
-// pub struct SongId(String);
 
 impl From<Track> for Song {
     fn from(value: Track) -> Self {

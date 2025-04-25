@@ -1,15 +1,13 @@
-use std::{
-    fmt::{Debug, Display},
-    sync::Arc,
-};
-
+use crate::Db;
 use axum::{Json, extract::State, http::StatusCode};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
+use std::{
+    fmt::{Debug, Display},
+    sync::Arc,
+};
 use tokio::sync::Mutex;
-
-use crate::Db;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Claims {
@@ -17,16 +15,19 @@ pub struct Claims {
     pub iat: usize,
     pub name: String,
 }
+
 #[derive(Debug)]
 pub struct AuthError {
     pub message: String,
     pub status_code: StatusCode,
 }
+
 impl Display for AuthError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "AuthError")
     }
 }
+
 impl std::error::Error for AuthError {}
 
 pub fn encode_jwt(name: String) -> Result<String, StatusCode> {
