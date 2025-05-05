@@ -17,6 +17,7 @@ pub struct Claims {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct AuthError {
     pub message: String,
     pub status_code: StatusCode,
