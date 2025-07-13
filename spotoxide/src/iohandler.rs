@@ -11,7 +11,7 @@ use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State, TryData},
 };
-use spotify_rs::model::search::Item;
+use spotify_rs::{endpoint::search::search, model::search::Item};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -64,7 +64,7 @@ async fn onvote(
 async fn onsearch(
     socket: SocketRef,
     State(db): State<Arc<Mutex<Db>>>,
-    Data(search): Data<SongSearch>,
+    Data(searchdata): Data<SongSearch>,
 ) {
     let db = db.lock().await;
     match &db.client {
@@ -72,14 +72,12 @@ async fn onsearch(
             let _ = socket.emit("search", "client not ready");
         }
         Some(client) => {
-            let response = client
-                .clone()
-                .search(
-                    search.searchstring,
-                    &[Item::Album, Item::Artist, Item::Track],
-                )
-                .get()
-                .await;
+            let response = search(
+                searchdata.searchstring,
+                &[Item::Album, Item::Artist, Item::Track],
+            )
+            .get(client)
+            .await;
             match response {
                 Ok(responsecontent) => {
                     let result = responsecontent.tracks;

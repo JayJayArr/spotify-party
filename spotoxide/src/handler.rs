@@ -4,6 +4,7 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
+use spotify_rs::endpoint::player::get_user_queue;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use tracing::info;
@@ -25,14 +26,8 @@ pub async fn redirect_handler(
     if db.client.is_some() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
-    let mut spotify = db
-        .client_unauth
-        .clone()
-        .authenticate(code, state)
-        .await
-        .unwrap();
+    let mut spotify = db.client_unauth.authenticate(code, state).await.unwrap();
 
-    db.client = Some(spotify.clone());
     info!("Client connected to spotify");
 
     // let user_playlists = spotify
@@ -42,8 +37,10 @@ pub async fn redirect_handler(
     //     .await
     //     .unwrap();
     // info!(?user_playlists, "playlists");
-    let currently_playing = spotify.get_user_queue().await.unwrap();
+    // let currently_playing = spotify.get_user_queue().await.unwrap();
+    let currently_playing = get_user_queue(&spotify).await.unwrap();
     // info!(?currently_playing, "currently_playing");
+    db.client = Some(spotify);
     db.queue = currently_playing.into();
 
     StatusCode::OK
