@@ -11,5 +11,12 @@ TODO:
 - [x] push the most voted song into the queue
 - [_] dynamically schedule the next song being pushed by the current number of active users
 - [x] dockerize Backend
+- [ ] integration and unit tests
+- [ ] login/create account
+- [ ] save the tokens for every room in a db
+- [ ] multiple rooms
+- [ ] process for every room and possible every connection
+- [ ] worker to pull new songs from Spotify for every vote room
+- [ ] worker to push new songs into the queue for every vote room
 - [ ] dockerzie Frontend
 - [ ] docker compose
