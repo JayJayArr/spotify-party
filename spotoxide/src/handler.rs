@@ -26,7 +26,7 @@ pub async fn redirect_handler(
     if db.client.is_some() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
-    let mut spotify = db.client_unauth.authenticate(code, state).await.unwrap();
+    let spotify = db.client_unauth.authenticate(code, state).await.unwrap();
 
     info!("Client connected to spotify");
 

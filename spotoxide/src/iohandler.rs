@@ -80,7 +80,11 @@ async fn onsearch(
             .await;
             match response {
                 Ok(responsecontent) => {
-                    let result = responsecontent.tracks;
+                    let result = responsecontent
+                        .tracks
+                        .iter()
+                        .map(|track| (Song::from(track)))
+                        .collect();
                     let _ = socket.emit("search", &result);
                 }
                 Err(err) => {

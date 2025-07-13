@@ -11,6 +11,8 @@ TODO:
 - [x] push the most voted song into the queue
 - [_] dynamically schedule the next song being pushed by the current number of active users
 - [x] dockerize Backend
+- [ ] implement Error handling strategy
+- [ ] implement logging solution
 - [ ] integration and unit tests
 - [ ] login/create account
 - [ ] save the tokens for every room in a db
