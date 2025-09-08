@@ -9,7 +9,10 @@ use peak_alloc::PeakAlloc;
 use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
-use spotify_rs::{AuthCodeClient, AuthCodeFlow, RedirectUrl};
+use spotify_rs::{
+    AuthCodeClient, RedirectUrl,
+    endpoint::player::{add_item_to_queue, get_user_queue},
+};
 use std::sync::Arc;
 use tokio::{signal, sync::Mutex};
 use tokio_cron_scheduler::{Job, JobScheduler};
@@ -59,8 +62,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "user-read-playback-state",
         "user-modify-playback-state",
     ];
-    let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
-    let (mut client, url) = AuthCodeClient::new(auth_code_flow, redirect_uri, auto_refresh);
+    // let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
+    let (mut client, url) =
+        AuthCodeClient::new(client_id, client_secret, scopes, redirect_uri, auto_refresh);
     client.auto_refresh = true;
     let redirecturlstring = url.to_string();
 
@@ -97,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match &mut db.client {
                         None => {}
                         Some(client) => {
-                            let currently_playing = client.get_user_queue().await.unwrap();
+                            let currently_playing = get_user_queue(client).await.unwrap();
                             db.queue = currently_playing.into();
                             let _ = iohandle.emit("songs", &db.queue.get()).await;
                             let _ = iohandle.emit("votes", &db.votes.get_all()).await;
@@ -128,7 +132,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 }
                                 Some(client) => {
                                     info!("Client active");
-                                    let _ = client.add_item_to_queue(songid).send().await;
+                                    let _ = add_item_to_queue(songid).send(&client).await;
                                     let _ = iohandle.emit("songs", &db.votes.get_all()).await;
                                 }
                             }
