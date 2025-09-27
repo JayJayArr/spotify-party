@@ -10,7 +10,7 @@ use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
 use song_queue::SongQueue;
 use spotify_rs::{
-    AuthCodeClient, RedirectUrl,
+    AuthCodePkceClient, RedirectUrl,
     endpoint::player::{add_item_to_queue, get_user_queue},
 };
 use std::sync::Arc;
@@ -62,9 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "user-read-playback-state",
         "user-modify-playback-state",
     ];
-    // let auth_code_flow = AuthCodeFlow::new(client_id, client_secret, scopes);
-    let (mut client, url) =
-        AuthCodeClient::new(client_id, client_secret, scopes, redirect_uri, auto_refresh);
+    let (mut client, url) = AuthCodePkceClient::new(client_id, scopes, redirect_uri, auto_refresh);
     client.auto_refresh = true;
     let redirecturlstring = url.to_string();
 
@@ -87,6 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     io.ns("/", on_connect.with(auth_middleware));
 
     let mut sched = JobScheduler::new().await?;
+
     //create a cron job to update the queue
     let crondbhandle = dbarc.clone();
     let croniohandle = io.clone();

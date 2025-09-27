@@ -22,10 +22,10 @@ pub async fn redirect_handler(
         Some(val) => val,
         None => return StatusCode::BAD_REQUEST,
     };
-    let db = &mut db.lock().await;
-    if db.client.is_some() {
-        return StatusCode::SERVICE_UNAVAILABLE;
-    }
+    let db = db.lock().await;
+    // if db.client.is_some() {
+    //     return StatusCode::SERVICE_UNAVAILABLE;
+    // }
     let spotify = db.client_unauth.authenticate(code, state).await.unwrap();
 
     info!("Client connected to spotify");
@@ -38,11 +38,11 @@ pub async fn redirect_handler(
     //     .unwrap();
     // info!(?user_playlists, "playlists");
     // let currently_playing = spotify.get_user_queue().await.unwrap();
-    let currently_playing = get_user_queue(&spotify).await.unwrap();
+    // let currently_playing = get_user_queue(&spotify).await.unwrap();
     // info!(?currently_playing, "currently_playing");
-    db.client = Some(spotify);
-    db.queue = currently_playing.into();
+    // db.client = db.client_unauth;
+    // db.client = Some(spotify);
+    // db.queue = currently_playing.into();
 
     StatusCode::OK
-    // let mut spotify = client.authenticate("auth_code", "csrf_token").await?;
 }
