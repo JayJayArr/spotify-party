@@ -41,13 +41,13 @@ static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     dotenv().ok();
-    let client_id =
-        std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
-    let client_secret =
-        std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
+    // let client_id =
+    //     std::env::var("SPOTIFY_CLIENT_ID").expect("SPOTIFY_CLIENT_ID must be specified");
+    // let client_secret =
+    //     std::env::var("SPOTIFY_CLIENT_SECRET").expect("SPOTIFY_CLIENT_SECRET must be specified");
 
-    //setup components
-    let rng = RNG::from(&Language::Fantasy);
+    //Set up components
+    let rng = RNG::try_from(&Language::Fantasy).unwrap();
     let queue = SongQueue::new();
     let usernames = Usernames::new();
     let votes = Votes::new();
@@ -62,16 +62,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "user-read-playback-state",
         "user-modify-playback-state",
     ];
-    let (mut client, url) = AuthCodePkceClient::new(client_id, scopes, redirect_uri, auto_refresh);
-    client.auto_refresh = true;
-    let redirecturlstring = url.to_string();
+    // let (mut client, url) = AuthCodePkceClient::new(client_id, scopes, redirect_uri, auto_refresh);
+    // client.auto_refresh = true;
+    // let redirecturlstring = url.to_string();
 
     let db = Db {
         users: usernames,
         votes,
         rng,
         queue,
-        client_unauth: client,
+        // client_unauth: client,
         client: None,
     };
     //wrap in an Arc, Mutex
@@ -151,7 +151,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let app = axum::Router::new()
             .route("/", get(|| async { "Hello, World!" }))
             .route("/signin", post(signin_handler))
-            .route("/login", get(|| async { redirecturlstring }))
+            // .route("/login", get(|| async { redirecturlstring }))
             .route("/redirect", get(redirect_handler))
             .route("/health", get(health_handler))
             .with_state(dbarc.clone())

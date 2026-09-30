@@ -83,7 +83,7 @@ async fn onsearch(
                     let result = responsecontent
                         .tracks
                         .iter()
-                        .map(|track| Song::from(track))
+                        .map(|track| Song::from(*track))
                         .collect();
                     let _ = socket.emit("search", &result);
                 }

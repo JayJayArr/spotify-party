@@ -7,7 +7,7 @@ pub struct Db {
     pub votes: Votes,
     pub queue: SongQueue,
     pub rng: RNG,
-    pub client_unauth: spotify_rs::client::Client<Unauthenticated, AuthCodePkceFlow>,
+    // pub client_unauth: spotify_rs::client::Client<Unauthenticated, AuthCodePkceFlow>,
     pub client: Option<spotify_rs::client::Client<spotify_rs::Token, AuthCodePkceFlow>>,
 }
 
