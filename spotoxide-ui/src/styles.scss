@@ -1,6 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @use "@angular/material" as mat;
-@import "@angular/material/prebuilt-themes/cyan-orange";
+// @import "@angular/material/prebuilt-themes/cyan-orange";
 
 html,
 body {
@@ -11,4 +11,5 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-body {}
+body {
+}
