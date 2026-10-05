@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Song, User } from '../../types';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { SocketioService } from '../socketio.service';
   selector: 'app-voting',
   imports: [MatCardModule, MatButtonModule, MatIconModule],
   templateUrl: './voting.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './voting.component.scss',
 })
 export class VotingComponent {

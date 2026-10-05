@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { Song } from '../../types';
 
@@ -6,6 +6,7 @@ import { Song } from '../../types';
   selector: 'app-playlist',
   imports: [MatCardModule],
   templateUrl: './playlist.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './playlist.component.scss',
 })
 export class PlaylistComponent {
