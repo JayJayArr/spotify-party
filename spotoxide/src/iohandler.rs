@@ -1,9 +1,9 @@
 use crate::{
     Db,
     auth::{AuthError, decode_jwt},
-    song::Song,
-    user::User,
-    votes::SongSearch,
+    model::song::Song,
+    model::user::User,
+    model::votes::SongSearch,
 };
 use axum::http::StatusCode;
 use rmpv::Value;
@@ -11,7 +11,10 @@ use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State, TryData},
 };
-use spotify_rs::{endpoint::search::search, model::search::Item};
+use spotify_rs::{
+    endpoint::search::search,
+    model::{Page, search::Item, track::Track},
+};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -80,11 +83,18 @@ async fn onsearch(
             .await;
             match response {
                 Ok(responsecontent) => {
-                    let result = responsecontent
+                    let pages: Vec<Vec<Song>> = responsecontent
                         .tracks
                         .iter()
-                        .map(|track| Song::from(*track))
+                        .map(|page| {
+                            return page
+                                .filtered_items()
+                                .iter()
+                                .map(|track| Song::from(track).clone())
+                                .collect();
+                        })
                         .collect();
+                    let result: Vec<&Song> = pages.iter().flatten().collect();
                     let _ = socket.emit("search", &result);
                 }
                 Err(err) => {

@@ -1,4 +1,4 @@
-use crate::song::Song;
+use crate::model::song::Song;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use spotify_rs::model::{PlayableItem, player::Queue};

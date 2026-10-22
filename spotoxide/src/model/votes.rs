@@ -1,4 +1,4 @@
-use crate::{song::Song, user::User};
+use crate::{model::song::Song, model::user::User};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

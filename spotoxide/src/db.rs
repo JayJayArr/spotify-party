@@ -1,4 +1,4 @@
-use crate::{song_queue::SongQueue, user::Usernames, votes::Votes};
+use crate::model::{song_queue::SongQueue, user::Usernames, votes::Votes};
 use rnglib::RNG;
 use spotify_rs::{AuthCodePkceFlow, Unauthenticated};
 

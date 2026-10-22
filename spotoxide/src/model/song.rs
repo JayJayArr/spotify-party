@@ -23,3 +23,18 @@ impl From<Track> for Song {
         }
     }
 }
+
+impl From<&Track> for Song {
+    fn from(value: &Track) -> Self {
+        Self {
+            title: value.name.clone(),
+            artists: value
+                .artists
+                .iter()
+                .map(|artist| artist.name.clone())
+                .collect(),
+            uri: value.uri.clone(), // artists: value.artists.into(),
+            picture: value.album.images[0].url.clone(),
+        }
+    }
+}

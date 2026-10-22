@@ -5,10 +5,12 @@ use dotenvy::dotenv;
 use handler::*;
 use health::health_handler;
 use iohandler::{auth_middleware, on_connect};
+use model::song_queue::SongQueue;
+use model::user::Usernames;
+use model::votes::Votes;
 use peak_alloc::PeakAlloc;
 use rnglib::{Language, RNG};
 use socketioxide::{SocketIoBuilder, handler::ConnectHandler};
-use song_queue::SongQueue;
 use spotify_rs::{
     AuthCodePkceClient, RedirectUrl,
     endpoint::player::{add_item_to_queue, get_user_queue},
@@ -20,8 +22,6 @@ use tokio_util::task::TaskTracker;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
-use user::Usernames;
-use votes::Votes;
 
 mod app;
 mod auth;
@@ -29,10 +29,7 @@ mod db;
 mod handler;
 mod health;
 mod iohandler;
-mod song;
-mod song_queue;
-mod user;
-mod votes;
+mod model;
 
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
